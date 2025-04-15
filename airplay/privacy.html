@@ -5,43 +5,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy - Smart TV Cast</title>
     <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --light-blue: #eef4ff;
+        }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            line-height: 1.7;
+            color: #444;
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
+            padding: 30px 20px;
+            background-color: #f0f2f5;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #eef1f5 100%);
         }
+        
         h1 {
-            color: #2c3e50;
+            color: var(--dark);
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
+            margin-bottom: 35px;
+            font-weight: 700;
+            position: relative;
+            padding-bottom: 15px;
         }
+        
+        h1:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+        
         h2 {
-            color: #2980b9;
-            margin-top: 25px;
+            color: var(--primary-dark);
+            margin-top: 35px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            position: relative;
+            padding-left: 15px;
         }
+        
+        h2:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+        
         .container {
             background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px 35px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
         }
+        
+        p {
+            color: #555;
+            margin-bottom: 1rem;
+        }
+        
+        ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+            color: #555;
+            position: relative;
+            padding-left: 5px;
+        }
+        
         .contact-info {
-            background-color: #f0f8ff;
-            padding: 15px;
-            border-left: 4px solid #3498db;
-            margin: 20px 0;
+            background-color: var(--light-blue);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            border-left: 5px solid var(--primary);
         }
+        
+        .contact-info p {
+            margin-bottom: 10px;
+        }
+        
+        .contact-info a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        
+        .contact-info a:hover {
+            color: var(--secondary);
+            text-decoration: underline;
+        }
+        
         .last-updated {
             text-align: right;
             font-style: italic;
-            color: #7f8c8d;
-            margin-top: 30px;
+            color: #888;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .policy-date {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            text-align: right;
+            color: #666;
+        }
+        
+        strong {
+            color: var(--dark);
+            font-weight: 600;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
         }
     </style>
 </head>
@@ -49,50 +156,66 @@
     <div class="container">
         <h1>Privacy Policy for Smart TV Cast</h1>
         
-        <p>Last Updated: <span id="current-date"></span></p>
+        <div class="policy-date">
+            <p>Last Updated: <span id="current-date"></span></p>
+        </div>
         
         <p>Smart Mobile Casting Co., Ltd ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Smart TV Cast application (the "App").</p>
         
-        <h2>1. Information We Collect</h2>
-        <p>We may collect certain information when you use our App, including:</p>
-        <ul>
-            <li><strong>Device Information:</strong> We may collect information about the device you use to access our App, including device model, operating system, and unique device identifiers.</li>
-            <li><strong>Usage Data:</strong> We collect data about how you interact with our App, including casting preferences and frequently accessed content.</li>
-            <li><strong>Network Information:</strong> To establish connections between devices, we may collect information about your local network configuration.</li>
-        </ul>
+        <div class="section">
+            <h2>1. Information We Collect</h2>
+            <p>We may collect certain information when you use our App, including:</p>
+            <ul>
+                <li><strong>Device Information:</strong> We may collect information about the device you use to access our App, including device model, operating system, and unique device identifiers.</li>
+                <li><strong>Usage Data:</strong> We collect data about how you interact with our App, including casting preferences and frequently accessed content.</li>
+                <li><strong>Network Information:</strong> To establish connections between devices, we may collect information about your local network configuration.</li>
+            </ul>
+        </div>
         
-        <h2>2. How We Use Your Information</h2>
-        <p>We use the collected information to:</p>
-        <ul>
-            <li>Provide, maintain, and improve our App's functionality</li>
-            <li>Develop new features and services</li>
-            <li>Analyze usage patterns to enhance user experience</li>
-            <li>Troubleshoot technical issues</li>
-            <li>Communicate with you about updates or important notices</li>
-        </ul>
+        <div class="section">
+            <h2>2. How We Use Your Information</h2>
+            <p>We use the collected information to:</p>
+            <ul>
+                <li>Provide, maintain, and improve our App's functionality</li>
+                <li>Develop new features and services</li>
+                <li>Analyze usage patterns to enhance user experience</li>
+                <li>Troubleshoot technical issues</li>
+                <li>Communicate with you about updates or important notices</li>
+            </ul>
+        </div>
         
-        <h2>3. Data Sharing and Disclosure</h2>
-        <p>We do not sell or rent your personal information to third parties. We may share information in the following limited circumstances:</p>
-        <ul>
-            <li>With service providers who assist in operating our App (under strict confidentiality agreements)</li>
-            <li>When required by law or to respond to legal process</li>
-            <li>To protect the rights or property of our company or users</li>
-        </ul>
+        <div class="section">
+            <h2>3. Data Sharing and Disclosure</h2>
+            <p>We do not sell or rent your personal information to third parties. We may share information in the following limited circumstances:</p>
+            <ul>
+                <li>With service providers who assist in operating our App (under strict confidentiality agreements)</li>
+                <li>When required by law or to respond to legal process</li>
+                <li>To protect the rights or property of our company or users</li>
+            </ul>
+        </div>
         
-        <h2>4. Data Security</h2>
-        <p>We implement appropriate technical and organizational measures to protect your information. However, no method of transmission over the Internet or electronic storage is 100% secure.</p>
+        <div class="section">
+            <h2>4. Data Security</h2>
+            <p>We implement appropriate technical and organizational measures to protect your information. However, no method of transmission over the Internet or electronic storage is 100% secure.</p>
+        </div>
         
-        <h2>5. Children's Privacy</h2>
-        <p>Our App is not directed to children under 13. We do not knowingly collect personal information from children under 13.</p>
+        <div class="section">
+            <h2>5. Children's Privacy</h2>
+            <p>Our App is not directed to children under 13. We do not knowingly collect personal information from children under 13.</p>
+        </div>
         
-        <h2>6. Changes to This Privacy Policy</h2>
-        <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.</p>
+        <div class="section">
+            <h2>6. Changes to This Privacy Policy</h2>
+            <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.</p>
+        </div>
         
-        <h2>7. Contact Us</h2>
-        <div class="contact-info">
-            <p>If you have any questions about this Privacy Policy, please contact us:</p>
-            <p><strong>Company Name:</strong> Smart Mobile Casting Co., Ltd</p>
-            <p><strong>Email:</strong> <a href="mailto:mobilesecure.feedback@gmail.com">mobilesecure.feedback@gmail.com</a></p>
+        <div class="section">
+            <h2>7. Contact Us</h2>
+            <div class="contact-info">
+                <p>If you have any questions about this Privacy Policy, please contact us:</p>
+                <p><strong>Company Name:</strong> Smart Mobile Casting Co., Ltd</p>
+                <p><strong>Email:</strong> <a href="mailto:mobilesecure.feedback@gmail.com">mobilesecure.feedback@gmail.com</a></p>
+            </div>
         </div>
         
         <div class="last-updated">
