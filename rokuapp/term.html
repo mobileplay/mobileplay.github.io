@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - Screen Mirroring Receiver</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a8a5e6;
+            --background-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--background-gradient);
+            padding: 20px;
+        }
+
+        .contact-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 600px;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .contact-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .app-name {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(108,92,231,0.2);
+        }
+
+        textarea {
+            height: 150px;
+            padding: 15px;
+            resize: vertical;
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: #5b4bc4;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108,92,231,0.3);
+        }
+
+        @media (max-width: 480px) {
+            .contact-container {
+                padding: 25px;
+            }
+            
+            .app-name {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="contact-container">
+        <div class="header">
+            <h1 class="app-name">Screen Mirroring Receiver</h1>
+            <p><strong>Terms of Service</strong><br/>Last updated: June&nbsp;2024</p>
+        </div>
+
+        <div class="terms-content" style="display:flex;flex-direction:column;gap:20px;font-size:15px;line-height:1.5;color:#333;">
+            <h2>1. Acceptance of Terms</h2>
+            <p>By installing or using Screen&nbsp;Mirroring&nbsp;Receiver ("the App") on your Roku device, you agree to be bound by these Terms of Service ("Terms"). If you do not agree, please uninstall the App.</p>
+
+            <h2>2. Description of Service</h2>
+            <p>The App enables you to wirelessly display content from a compatible iOS device on your Roku device. The App itself does not host any content.</p>
+
+            <h2>3. Usage Requirements</h2>
+            <p>You are responsible for any content you cast and for complying with all applicable laws. Do not cast copyrighted or unlawful material without permission.</p>
+
+            <h2>4. Disclaimer of Warranty</h2>
+            <p>The App is provided "as is" without warranties of any kind. We do not guarantee uninterrupted or error-free operation.</p>
+
+            <h2>5. Limitation of Liability</h2>
+            <p>To the fullest extent permitted by law, we shall not be liable for any indirect, incidental, or consequential damages arising from your use of the App.</p>
+
+            <h2>6. Termination</h2>
+            <p>We reserve the right to discontinue or suspend the App at any time without notice.</p>
+
+            <h2>7. Changes to These Terms</h2>
+            <p>We may update these Terms occasionally. Continued use of the App after changes constitutes acceptance of the new Terms.</p>
+
+            <h2>8. Contact</h2>
+            <p>Questions? Email us at <a href="mailto:support@yourdomain.com">support@yourdomain.com</a>.</p>
+        </div>
+    </div>
+</body>
+</html>
