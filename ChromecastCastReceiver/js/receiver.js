@@ -101,7 +101,7 @@ playerManager.addEventListener(
         'LOAD_FAILED: Verify the load request is set up ' +
         'properly and the media is able to play.');
     }
-});
+  });
 
 /*
  * Example analytics tracking implementation. To enable this functionality see
@@ -126,26 +126,30 @@ function addBreaks(mediaInformation) {
   castDebugLogger.debug(LOG_RECEIVER_TAG, "addBreaks: " +
     JSON.stringify(mediaInformation));
   return MediaFetcher.fetchMediaById('fbb_ad')
-  .then((clip1) => {
-    mediaInformation.breakClips = [
-      {
-        id: 'fbb_ad',
-        title: clip1.title,
-        contentUrl: clip1.stream.dash,
-        contentType: 'application/dash+xml',
-        whenSkippable: 5
-      }
-    ];
+    .then((clip1) => {
+      mediaInformation.breakClips = [
+        {
+          id: 'fbb_ad',
+          title: clip1.title,
+          contentUrl: clip1.stream.dash,
+          contentType: 'application/dash+xml',
+          whenSkippable: 5
+        }
+      ];
 
-    mediaInformation.breaks = [
-      {
-        id: 'pre-roll',
-        breakClipIds: ['fbb_ad'],
-        position: 0
-      }
-    ];
-  });
+      mediaInformation.breaks = [
+        {
+          id: 'pre-roll',
+          breakClipIds: ['fbb_ad'],
+          position: 0
+        }
+      ];
+    });
 }
+
+import { WebSocketPlayer } from './websocket_player.js';
+
+const webSocketPlayer = new WebSocketPlayer('websocket-canvas');
 
 /*
  * Intercept the LOAD request to load and set the contentUrl.
@@ -168,43 +172,80 @@ playerManager.setMessageInterceptor(
       || loadRequestData.media.entity || loadRequestData.media.contentId;
 
     // If there is no source or a malformed ID then return an error.
-    if (!source || source == "" || !source.match(ID_REGEX)) {
-      let error = new cast.framework.messages.ErrorData(
-        cast.framework.messages.ErrorType.LOAD_FAILED);
-      error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
-      return error;
+    if (!source || source == "") {
+      // Allow non-regex match if it is a websocket url
+      if (source && (source.startsWith('ws://') || source.startsWith('wss://'))) {
+        // Pass through
+      } else if (!source.match(ID_REGEX)) {
+        let error = new cast.framework.messages.ErrorData(
+          cast.framework.messages.ErrorType.LOAD_FAILED);
+        error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
+        return error;
+      }
     }
+
+    // Check for WebSocket URL
+    if (source.startsWith('ws://') || source.startsWith('wss://')) {
+      castDebugLogger.info(LOG_RECEIVER_TAG, "Starting WebSocket Player with URL: " + source);
+
+      // Hide standard player, show canvas
+      const canvas = document.getElementById('websocket-canvas');
+      const castPlayer = document.querySelector('cast-media-player');
+
+      if (canvas) canvas.style.display = 'block';
+      if (castPlayer) castPlayer.style.display = 'none';
+
+      webSocketPlayer.start(source);
+
+      // We need to return the loadRequestData to keep the session alive, 
+      // but we might want to prevent the default player from trying to load it.
+      // Putting a dummy valid contentUrl might work, or just let it fail silently in the background 
+      // while our canvas takes over. 
+      // A better approach for CAF is to use a dummy stream or set the contentUrl to something valid but empty.
+      // For now, let's try setting it to the source and see if CAF ignores it or fails.
+      // If CAF fails, we might need a dummy video.
+
+      return loadRequestData;
+    }
+
+    // Normal Flow: Stop WebSocket Player if running
+    webSocketPlayer.stop();
+    const canvas = document.getElementById('websocket-canvas');
+    const castPlayer = document.querySelector('cast-media-player');
+    if (canvas) canvas.style.display = 'none';
+    if (castPlayer) castPlayer.style.display = 'block';
+
 
     let sourceId = source.match(ID_REGEX)[1];
 
     // Optionally add breaks to the media information and set the contentUrl.
     return Promise.resolve()
-    // .then(() => addBreaks(loadRequestData.media)) // Uncomment to enable ads.
-    .then(() => {
-      // If the source is a url that points to an asset don't fetch from the
-      // content repository.
-      if (sourceId.includes('.')) {
-        castDebugLogger.debug(LOG_RECEIVER_TAG,
-          "Interceptor received full URL");
-        loadRequestData.media.contentUrl = source;
-        return loadRequestData;
-      } else {
-        // Fetch the contentUrl if provided an ID or entity URL.
-        castDebugLogger.debug(LOG_RECEIVER_TAG, "Interceptor received ID");
-        return MediaFetcher.fetchMediaInformationById(sourceId)
-        .then((mediaInformation) => {
-          loadRequestData.media = mediaInformation;
+      // .then(() => addBreaks(loadRequestData.media)) // Uncomment to enable ads.
+      .then(() => {
+        // If the source is a url that points to an asset don't fetch from the
+        // content repository.
+        if (sourceId.includes('.')) {
+          castDebugLogger.debug(LOG_RECEIVER_TAG,
+            "Interceptor received full URL");
+          loadRequestData.media.contentUrl = source;
           return loadRequestData;
-        })
-      }
-    })
-    .catch((errorMessage) => {
-      let error = new cast.framework.messages.ErrorData(
-        cast.framework.messages.ErrorType.LOAD_FAILED);
-      error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
-      castDebugLogger.error(LOG_RECEIVER_TAG, errorMessage);
-      return error;
-    });
+        } else {
+          // Fetch the contentUrl if provided an ID or entity URL.
+          castDebugLogger.debug(LOG_RECEIVER_TAG, "Interceptor received ID");
+          return MediaFetcher.fetchMediaInformationById(sourceId)
+            .then((mediaInformation) => {
+              loadRequestData.media = mediaInformation;
+              return loadRequestData;
+            })
+        }
+      })
+      .catch((errorMessage) => {
+        let error = new cast.framework.messages.ErrorData(
+          cast.framework.messages.ErrorType.LOAD_FAILED);
+        error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
+        castDebugLogger.error(LOG_RECEIVER_TAG, errorMessage);
+        return error;
+      });
   }
 );
 
