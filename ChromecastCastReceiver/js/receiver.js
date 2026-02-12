@@ -150,6 +150,154 @@ function addBreaks(mediaInformation) {
 import { WebSocketPlayer } from './websocket_player.js';
 
 const webSocketPlayer = new WebSocketPlayer('websocket-canvas');
+const CONNECTSDK_NAMESPACE = 'urn:x-cast:com.connectsdk';
+const MIRROR_NAMESPACE = 'urn:x-cast:com.connectsdk.mirror';
+const DUMMY_MEDIA_URL = new URL('../res/background-1.jpg', window.location.href).toString();
+let websocketMirrorActive = false;
+
+function showMirrorCanvas() {
+  const canvas = document.getElementById('websocket-canvas');
+  const castPlayer = document.querySelector('cast-media-player');
+  if (canvas) canvas.style.display = 'block';
+  if (castPlayer) castPlayer.style.display = 'none';
+}
+
+function showDefaultPlayer() {
+  const canvas = document.getElementById('websocket-canvas');
+  const castPlayer = document.querySelector('cast-media-player');
+  if (canvas) canvas.style.display = 'none';
+  if (castPlayer) castPlayer.style.display = 'block';
+}
+
+function extractCustomData(loadRequestData) {
+  return loadRequestData?.media?.customData || loadRequestData?.customData || null;
+}
+
+function maybeDecodeURIComponentOnce(value) {
+  if (typeof value !== 'string') return value;
+  if (!value.includes('%')) return value;
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function normalizeWebSocketUrl(source) {
+  if (!source || typeof source !== 'string') return null;
+  const trimmed = maybeDecodeURIComponentOnce(source.trim());
+  if (!trimmed) return null;
+  if (trimmed.startsWith('ws://') || trimmed.startsWith('wss://')) {
+    return trimmed;
+  }
+  if (!(trimmed.startsWith('http://') || trimmed.startsWith('https://'))) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    const forced = parsed.searchParams.get('ws') ||
+      parsed.searchParams.get('wsUrl') ||
+      parsed.searchParams.get('websocket') ||
+      parsed.searchParams.get('websocketUrl');
+    if (forced) {
+      return normalizeWebSocketUrl(forced);
+    }
+
+    const normalizedPath = parsed.pathname.toLowerCase();
+    const shouldUseMirrorSocket = normalizedPath === '/' ||
+      normalizedPath.endsWith('/sourcecast.html') ||
+      normalizedPath.endsWith('/sourcecast');
+    if (!shouldUseMirrorSocket) {
+      return null;
+    }
+
+    parsed.pathname = '/ws';
+    parsed.search = '';
+    parsed.hash = '';
+    parsed.protocol = parsed.protocol === 'https:' ? 'wss:' : 'ws:';
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+function resolveMirrorWebSocketUrl(loadRequestData) {
+  const customData = extractCustomData(loadRequestData);
+  const candidates = [
+    customData?.wsUrl,
+    customData?.websocketUrl,
+    customData?.socketUrl,
+    customData?.mirrorUrl,
+    customData?.target,
+    loadRequestData?.media?.contentUrl,
+    loadRequestData?.media?.entity,
+    loadRequestData?.media?.contentId
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeWebSocketUrl(candidate);
+    if (normalized) return normalized;
+  }
+  return null;
+}
+
+function startWebSocketMirror(wsUrl, sourceTag) {
+  if (!wsUrl) return false;
+  castDebugLogger.info(LOG_RECEIVER_TAG,
+    `Starting WebSocket mirror from ${sourceTag}: ${wsUrl}`);
+  showMirrorCanvas();
+  webSocketPlayer.start(wsUrl);
+  websocketMirrorActive = true;
+  return true;
+}
+
+function stopWebSocketMirror() {
+  if (!websocketMirrorActive) return;
+  webSocketPlayer.stop();
+  showDefaultPlayer();
+  websocketMirrorActive = false;
+}
+
+function asObjectMessage(payload) {
+  if (!payload) return null;
+  if (typeof payload === 'object') return payload;
+  if (typeof payload === 'string') {
+    try {
+      return JSON.parse(payload);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function handleMirrorControlMessage(payload, sourceTag) {
+  const message = asObjectMessage(payload);
+  if (!message) return;
+
+  const command = (message.type || message.action || message.command || '').toLowerCase();
+  if (command === 'mirror.stop' || command === 'stop_mirror' || command === 'stopmirror' || command === 'stop') {
+    castDebugLogger.info(LOG_RECEIVER_TAG, `Received mirror stop from ${sourceTag}`);
+    stopWebSocketMirror();
+    return;
+  }
+
+  const wsUrl = normalizeWebSocketUrl(
+    message.wsUrl || message.websocketUrl || message.socketUrl || message.url || message.target
+  );
+  if (wsUrl) {
+    startWebSocketMirror(wsUrl, sourceTag);
+  }
+}
+
+context.addCustomMessageListener(CONNECTSDK_NAMESPACE, (event) => {
+  handleMirrorControlMessage(event?.data, CONNECTSDK_NAMESPACE);
+});
+
+context.addCustomMessageListener(MIRROR_NAMESPACE, (event) => {
+  handleMirrorControlMessage(event?.data, MIRROR_NAMESPACE);
+});
 
 /*
  * Intercept the LOAD request to load and set the contentUrl.
@@ -167,56 +315,39 @@ playerManager.setMessageInterceptor(
       return error;
     }
 
-    // Check all content source fields for the asset URL or ID.
-    let source = loadRequestData.media.contentUrl
-      || loadRequestData.media.entity || loadRequestData.media.contentId;
-
-    // If there is no source or a malformed ID then return an error.
-    if (!source || source == "") {
-      // Allow non-regex match if it is a websocket url
-      if (source && (source.startsWith('ws://') || source.startsWith('wss://'))) {
-        // Pass through
-      } else if (!source.match(ID_REGEX)) {
-        let error = new cast.framework.messages.ErrorData(
-          cast.framework.messages.ErrorType.LOAD_FAILED);
-        error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
-        return error;
-      }
-    }
-
-    // Check for WebSocket URL
-    if (source.startsWith('ws://') || source.startsWith('wss://')) {
-      castDebugLogger.info(LOG_RECEIVER_TAG, "Starting WebSocket Player with URL: " + source);
-
-      // Hide standard player, show canvas
-      const canvas = document.getElementById('websocket-canvas');
-      const castPlayer = document.querySelector('cast-media-player');
-
-      if (canvas) canvas.style.display = 'block';
-      if (castPlayer) castPlayer.style.display = 'none';
-
-      webSocketPlayer.start(source);
-
-      // We need to return the loadRequestData to keep the session alive, 
-      // but we might want to prevent the default player from trying to load it.
-      // Putting a dummy valid contentUrl might work, or just let it fail silently in the background 
-      // while our canvas takes over. 
-      // A better approach for CAF is to use a dummy stream or set the contentUrl to something valid but empty.
-      // For now, let's try setting it to the source and see if CAF ignores it or fails.
-      // If CAF fails, we might need a dummy video.
-
+    const mirrorWsUrl = resolveMirrorWebSocketUrl(loadRequestData);
+    if (mirrorWsUrl) {
+      startWebSocketMirror(mirrorWsUrl, 'LOAD');
+      loadRequestData.media.contentUrl = DUMMY_MEDIA_URL;
+      loadRequestData.media.contentType = 'image/jpeg';
       return loadRequestData;
     }
 
-    // Normal Flow: Stop WebSocket Player if running
-    webSocketPlayer.stop();
-    const canvas = document.getElementById('websocket-canvas');
-    const castPlayer = document.querySelector('cast-media-player');
-    if (canvas) canvas.style.display = 'none';
-    if (castPlayer) castPlayer.style.display = 'block';
+    // Normal flow
+    stopWebSocketMirror();
 
+    // Check all content source fields for the asset URL or ID.
+    let source = loadRequestData.media.contentUrl
+      || loadRequestData.media.entity
+      || loadRequestData.media.contentId;
+    source = maybeDecodeURIComponentOnce(source);
 
-    let sourceId = source.match(ID_REGEX)[1];
+    if (!source || source === '') {
+      let error = new cast.framework.messages.ErrorData(
+        cast.framework.messages.ErrorType.LOAD_FAILED);
+      error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
+      return error;
+    }
+
+    const sourceMatch = source.match(ID_REGEX);
+    if (!(source.startsWith('http://') || source.startsWith('https://') || sourceMatch)) {
+      let error = new cast.framework.messages.ErrorData(
+        cast.framework.messages.ErrorType.LOAD_FAILED);
+      error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
+      return error;
+    }
+
+    let sourceId = sourceMatch ? sourceMatch[1] : source;
 
     // Optionally add breaks to the media information and set the contentUrl.
     return Promise.resolve()
@@ -295,7 +426,7 @@ castReceiverOptions.supportedCommands =
   cast.framework.messages.Command.ALL_BASIC_MEDIA |
   cast.framework.messages.Command.QUEUE_PREV |
   cast.framework.messages.Command.QUEUE_NEXT |
-  cast.framework.messages.Command.STREAM_TRANSFER
+  cast.framework.messages.Command.STREAM_TRANSFER;
 
 /*
  * Optionally enable a custom queue implementation. Custom queues allow the
