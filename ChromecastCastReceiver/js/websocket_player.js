@@ -13,6 +13,8 @@ export class WebSocketPlayer {
         this.nextStartTime = 0;
         this.initialBuffering = true;
         this.debug = true; // Set to true to see logs
+        this.videoWidth = 0;
+        this.videoHeight = 0;
 
         // Audio drift parameters
         this.MAX_AUDIO_LATENCY = 0.3; // 300ms max allowed drift
@@ -23,6 +25,10 @@ export class WebSocketPlayer {
         this.onOpen = this.onOpen.bind(this);
         this.onClose = this.onClose.bind(this);
         this.onError = this.onError.bind(this);
+        this.handleResize = this.handleResize.bind(this);
+
+        this.handleResize();
+        window.addEventListener('resize', this.handleResize);
     }
 
     log(msg) {
@@ -69,6 +75,8 @@ export class WebSocketPlayer {
         this.audioQueue = [];
         this.nextStartTime = 0;
         this.initialBuffering = true;
+        this.videoWidth = 0;
+        this.videoHeight = 0;
 
         // Clear canvas
         if (this.ctx && this.canvas) {
@@ -105,15 +113,10 @@ export class WebSocketPlayer {
         // Example: "270,1280,720,123.456"
         const parts = text.split(',');
         if (parts.length >= 3) {
-            const rotation = parseFloat(parts[0]); // Not strictly used if image is pre-rotated, but good to know
             const width = parseFloat(parts[1]);
             const height = parseFloat(parts[2]);
-
-            if (this.canvas.width !== width || this.canvas.height !== height) {
-                this.canvas.width = width;
-                this.canvas.height = height;
-                this.log(`Canvas resized to ${width}x${height}`);
-            }
+            this.videoWidth = Number.isFinite(width) && width > 0 ? width : this.videoWidth;
+            this.videoHeight = Number.isFinite(height) && height > 0 ? height : this.videoHeight;
         }
     }
 
@@ -129,7 +132,7 @@ export class WebSocketPlayer {
             const jpegData = new Blob([new Uint8Array(buffer, 1)], { type: 'image/jpeg' });
             createImageBitmap(jpegData).then(imageBitmap => {
                 if (this.canvas && this.ctx) {
-                    this.ctx.drawImage(imageBitmap, 0, 0, this.canvas.width, this.canvas.height);
+                    this.drawImageContain(imageBitmap);
                 }
                 imageBitmap.close(); // Important to release memory
             }).catch(err => {
@@ -211,5 +214,39 @@ export class WebSocketPlayer {
 
         source.start(this.nextStartTime);
         this.nextStartTime += audioBuffer.duration;
+    }
+
+    handleResize() {
+        if (!this.canvas || !this.ctx) return;
+        const width = this.canvas.clientWidth || window.innerWidth || 1280;
+        const height = this.canvas.clientHeight || window.innerHeight || 720;
+        if (this.canvas.width !== width || this.canvas.height !== height) {
+            this.canvas.width = width;
+            this.canvas.height = height;
+            this.ctx.imageSmoothingEnabled = true;
+        }
+    }
+
+    drawImageContain(imageBitmap) {
+        this.handleResize();
+
+        const canvasWidth = this.canvas.width;
+        const canvasHeight = this.canvas.height;
+        const sourceWidth = this.videoWidth > 0 ? this.videoWidth : imageBitmap.width;
+        const sourceHeight = this.videoHeight > 0 ? this.videoHeight : imageBitmap.height;
+
+        if (canvasWidth <= 0 || canvasHeight <= 0 || sourceWidth <= 0 || sourceHeight <= 0) {
+            return;
+        }
+
+        const scale = Math.min(canvasWidth / sourceWidth, canvasHeight / sourceHeight);
+        const drawWidth = sourceWidth * scale;
+        const drawHeight = sourceHeight * scale;
+        const x = (canvasWidth - drawWidth) * 0.5;
+        const y = (canvasHeight - drawHeight) * 0.5;
+
+        this.ctx.fillStyle = 'black';
+        this.ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        this.ctx.drawImage(imageBitmap, 0, 0, imageBitmap.width, imageBitmap.height, x, y, drawWidth, drawHeight);
     }
 }
