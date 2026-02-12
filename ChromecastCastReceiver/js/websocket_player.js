@@ -1,7 +1,11 @@
 export class WebSocketPlayer {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
-        this.ctx = this.canvas.getContext('2d', { alpha: false }); // Optimize for no transparency
+        // Optimize for low latency video rendering
+        this.ctx = this.canvas.getContext('2d', {
+            alpha: false,
+            desynchronized: true // Hint to browser for low-latency rendering
+        });
         this.ws = null;
         this.audioContext = null;
         this.audioQueue = []; // Array of AudioBuffer
@@ -9,6 +13,10 @@ export class WebSocketPlayer {
         this.nextStartTime = 0;
         this.initialBuffering = true;
         this.debug = true; // Set to true to see logs
+
+        // Audio drift parameters
+        this.MAX_AUDIO_LATENCY = 0.3; // 300ms max allowed drift
+        this.AUDIO_BUFFER_TARGET = 0.05; // 50ms target buffer
 
         // Bind methods
         this.handleMessage = this.handleMessage.bind(this);
@@ -61,10 +69,10 @@ export class WebSocketPlayer {
         this.audioQueue = [];
         this.nextStartTime = 0;
         this.initialBuffering = true;
-        
+
         // Clear canvas
         if (this.ctx && this.canvas) {
-           this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
     }
 
@@ -100,7 +108,7 @@ export class WebSocketPlayer {
             const rotation = parseFloat(parts[0]); // Not strictly used if image is pre-rotated, but good to know
             const width = parseFloat(parts[1]);
             const height = parseFloat(parts[2]);
-            
+
             if (this.canvas.width !== width || this.canvas.height !== height) {
                 this.canvas.width = width;
                 this.canvas.height = height;
@@ -121,7 +129,7 @@ export class WebSocketPlayer {
             const jpegData = new Blob([new Uint8Array(buffer, 1)], { type: 'image/jpeg' });
             createImageBitmap(jpegData).then(imageBitmap => {
                 if (this.canvas && this.ctx) {
-                   this.ctx.drawImage(imageBitmap, 0, 0, this.canvas.width, this.canvas.height);
+                    this.ctx.drawImage(imageBitmap, 0, 0, this.canvas.width, this.canvas.height);
                 }
                 imageBitmap.close(); // Important to release memory
             }).catch(err => {
@@ -135,8 +143,8 @@ export class WebSocketPlayer {
     }
 
     processAudioPacket(view, buffer) {
-        if (!this.audioContext) return;
-        
+        if (!this.audioContext || this.audioContext.state === 'closed') return;
+
         // Header structure after 1 byte prefix:
         // PTS (8 bytes) - Big Endian
         // Total Length (4 bytes) - Little Endian
@@ -148,26 +156,26 @@ export class WebSocketPlayer {
 
         // Ensure bigEndianPts matches Swift's bigEndian encoding
         // const ptsMs = view.getBigUint64(1, false); // Big Endian
-        
+
         // const totalLen = view.getUint32(9, true); // Little Endian
         const sampleRate = view.getUint32(13, true); // Little Endian
         const channels = view.getUint8(17);
 
         const pcmDataOffset = headerSize;
         const pcmDataLength = buffer.byteLength - pcmDataOffset;
-        
+
         if (pcmDataLength <= 0) return;
 
         // Create AudioBuffer
         const frameCount = pcmDataLength / 4; // Float32 is 4 bytes
         const audioBuffer = this.audioContext.createBuffer(channels, frameCount / channels, sampleRate);
-        
+
         const floatData = new Float32Array(buffer, pcmDataOffset, frameCount);
-        
+
         // De-interleave if necessary (CTScreenCast sends planar, so might need check)
         // Swift code: rawData.append(UnsafeBufferPointer(start: finalChannelData[i]...))
         // This implies PLANAR data (all Ch1, then all Ch2...)
-        
+
         const channelLength = frameCount / channels;
         for (let channel = 0; channel < channels; channel++) {
             const channelData = audioBuffer.getChannelData(channel);
@@ -187,11 +195,18 @@ export class WebSocketPlayer {
 
         const currentTime = this.audioContext.currentTime;
 
-        // Initial buffering or reset
+        // Logic to handle audio drift
+        // If nextStartTime is too far behind (buffer underrun), reset it to currentTime
+        // If nextStartTime is too far ahead (latency accumulation), skip ahead
+
         if (this.initialBuffering || this.nextStartTime < currentTime) {
-            // Start slightly in the future to allow scheduling
-            this.nextStartTime = currentTime + 0.05; // 50ms buffer
+            // Underrun or start: Reset to current time + buffer target
+            this.nextStartTime = currentTime + this.AUDIO_BUFFER_TARGET;
             this.initialBuffering = false;
+        } else if (this.nextStartTime > currentTime + this.MAX_AUDIO_LATENCY) {
+            // Latency too high: Drop buffer by resetting nextStartTime closer to now
+            this.log(`Audio drift detected (latency: ${(this.nextStartTime - currentTime).toFixed(3)}s). Resyncing.`);
+            this.nextStartTime = currentTime + this.AUDIO_BUFFER_TARGET;
         }
 
         source.start(this.nextStartTime);
