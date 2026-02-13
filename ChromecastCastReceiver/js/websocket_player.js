@@ -170,7 +170,11 @@ export class WebSocketPlayer {
         if (packetType === 0x01) {
             this.enqueueVideoFrame(buffer);
         } else if (packetType === 0x02) {
-            this.processAudioPacket(view, buffer);
+            try {
+                this.processAudioPacket(view, buffer);
+            } catch (error) {
+                this.log(`Audio packet parse error: ${error?.message || error}`);
+            }
         }
     }
 
@@ -218,20 +222,28 @@ export class WebSocketPlayer {
         if (buffer.byteLength < headerSize) return;
 
         const ptsMs = this.readUint64BE(view, 1);
+        const payloadLen = view.getUint32(9, true);
         const sampleRate = view.getUint32(13, true);
         const channels = view.getUint8(17);
 
-        if (!sampleRate || !channels) return;
+        if (!sampleRate || !channels || !payloadLen) return;
 
         const pcmDataOffset = headerSize;
-        const pcmDataLength = buffer.byteLength - pcmDataOffset;
-        if (pcmDataLength <= 0) return;
+        const availableLength = buffer.byteLength - pcmDataOffset;
+        const pcmDataLength = Math.min(payloadLen, availableLength);
+        if (pcmDataLength <= 0 || (pcmDataLength % 4) !== 0) return;
 
         const frameCount = pcmDataLength / 4;
         if (frameCount <= 0 || frameCount % channels !== 0) return;
 
         const audioBuffer = this.audioContext.createBuffer(channels, frameCount / channels, sampleRate);
-        const floatData = new Float32Array(buffer, pcmDataOffset, frameCount);
+
+        // Float32Array requires byteOffset aligned to 4 bytes.
+        // Packet payload starts at offset 18, so copy to an aligned buffer first.
+        const pcmBytes = new Uint8Array(buffer, pcmDataOffset, pcmDataLength);
+        const alignedBytes = new Uint8Array(pcmDataLength);
+        alignedBytes.set(pcmBytes);
+        const floatData = new Float32Array(alignedBytes.buffer);
 
         const channelLength = frameCount / channels;
         for (let channel = 0; channel < channels; channel++) {
@@ -278,8 +290,10 @@ export class WebSocketPlayer {
 
             const staleMs = (currentTime - targetStart) * 1000;
             if (staleMs > this.MAX_STALE_AUDIO_MS) {
-                this.log(`Dropping stale audio packet (${Math.round(staleMs)}ms late)`);
-                return;
+                this.log(`Audio stale (${Math.round(staleMs)}ms), resync`);
+                this.audioAnchorCtxTime = currentTime + this.AUDIO_BUFFER_TARGET;
+                this.audioAnchorPtsMs = ptsMs;
+                targetStart = this.audioAnchorCtxTime;
             }
 
             if (targetStart < currentTime + 0.005) {
