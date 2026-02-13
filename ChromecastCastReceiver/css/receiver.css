@@ -21,17 +21,33 @@ body {
 cast-media-player {
   --theme-hue: 180;
   --progress-color: rgb(0, 255, 255);
+  /* Custom Background */
   --splash-image: url('res/background-1.jpg');
   --splash-size: cover;
+
+  /* Hiding default UI elements via CSS Variables */
+  --logo-image: none;
+  --watermark-image: none;
+  --spinner-image: none;
+  --buffering-image: none;
   --playback-logo-image: none;
+
+  /* Hide header text (App Name) by making it transparent/small */
+  color: transparent;
+  font-size: 0;
 }
 
-/* Hide default splash elements */
+/* 
+   Attempts to target internal elements if they are exposed or if this helps 
+   (Note: Shadow DOM might block this, but 'color: transparent' on host often inherits) 
+*/
 .splash-image,
 .splash-text,
 .spinner,
-.logo {
+.logo,
+.watermark {
   display: none !important;
+  opacity: 0 !important;
 }
 
 #websocket-canvas {
