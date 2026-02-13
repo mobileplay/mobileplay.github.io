@@ -249,6 +249,12 @@ function startWebSocketMirror(wsUrl, sourceTag) {
   showMirrorCanvas();
   webSocketPlayer.start(wsUrl);
   websocketMirrorActive = true;
+
+  // Ask sender to prioritize low-latency settings for smoother mirror playback.
+  setTimeout(() => {
+    webSocketPlayer.sendControlMessage('quality:lowLatency');
+  }, 250);
+
   return true;
 }
 
