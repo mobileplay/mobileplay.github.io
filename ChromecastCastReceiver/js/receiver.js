@@ -328,6 +328,13 @@ function resolveWebRTCSignalingUrl(loadRequestData) {
   return null;
 }
 
+function isLikelyHLSLoad(loadRequestData, source) {
+  const contentType = String(loadRequestData?.media?.contentType || '').toLowerCase();
+  const normalizedSource = String(source || '').toLowerCase();
+  if (contentType.includes('mpegurl')) return true;
+  return normalizedSource.includes('.m3u8');
+}
+
 function startWebSocketMirror(wsUrl, sourceTag) {
   if (!wsUrl) return false;
   castDebugLogger.info(LOG_RECEIVER_TAG,
@@ -524,6 +531,17 @@ playerManager.setMessageInterceptor(
     stopAllCustomMirrors();
 
     source = maybeDecodeURIComponentOnce(source);
+    if (isLikelyHLSLoad(loadRequestData, source)) {
+      loadRequestData.media.streamType = cast.framework.messages.StreamType.LIVE;
+      const currentType = String(loadRequestData.media.contentType || '').toLowerCase();
+      if (!currentType || currentType.includes('x-mpegurl')) {
+        loadRequestData.media.contentType = 'application/vnd.apple.mpegurl';
+      }
+      castDebugLogger.info(
+        LOG_RECEIVER_TAG,
+        `HLS load normalized contentType=${loadRequestData.media.contentType} streamType=LIVE source=${source}`
+      );
+    }
 
     const sourceMatch = source.match(ID_REGEX);
     if (!(source.startsWith('http://') || source.startsWith('https://') || sourceMatch)) {
