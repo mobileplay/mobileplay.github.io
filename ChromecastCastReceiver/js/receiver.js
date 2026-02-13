@@ -151,7 +151,11 @@ import { WebSocketPlayer } from './websocket_player.js';
 import { WebRTCPlayer } from './webrtc_player.js';
 
 const webSocketPlayer = new WebSocketPlayer('websocket-canvas');
-const webRTCPlayer = new WebRTCPlayer('webrtc-video');
+const webRTCPlayer = new WebRTCPlayer('webrtc-video', {
+  onState: (state, payload = {}) => {
+    castDebugLogger.info(LOG_RECEIVER_TAG, `[WebRTC] ${state} ${JSON.stringify(payload)}`);
+  }
+});
 const CONNECTSDK_NAMESPACE = 'urn:x-cast:com.connectsdk';
 const MIRROR_NAMESPACE = 'urn:x-cast:com.connectsdk.mirror';
 const DUMMY_MEDIA_URL = new URL('../res/background-1.jpg', window.location.href).toString();
@@ -447,6 +451,7 @@ playerManager.setMessageInterceptor(
 
     const customData = extractCustomData(loadRequestData);
     const requestedMode = String(customData?.mode || '').toLowerCase();
+    castDebugLogger.info(LOG_RECEIVER_TAG, `Mirror LOAD mode=${requestedMode || 'auto'} customData=${JSON.stringify(customData || {})}`);
 
     if (requestedMode === 'webrtc_mirror') {
       const signalingUrl = resolveWebRTCSignalingUrl(loadRequestData);
@@ -456,6 +461,7 @@ playerManager.setMessageInterceptor(
         error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
         return error;
       }
+      castDebugLogger.info(LOG_RECEIVER_TAG, `Resolved WebRTC signaling URL (customData): ${signalingUrl}`);
       startWebRTCMirror(signalingUrl, 'LOAD:customData');
       loadRequestData.media.contentUrl = DUMMY_MEDIA_URL;
       loadRequestData.media.contentType = 'image/jpeg';
@@ -502,6 +508,7 @@ playerManager.setMessageInterceptor(
     const sourceWebRTCSignal = normalizeWebRTCSignalingUrl(source);
     if (sourceWebRTCSignal && source.toLowerCase().includes('webrtc')) {
       castDebugLogger.info(LOG_RECEIVER_TAG, "Starting WebRTC Player with URL: " + sourceWebRTCSignal);
+      castDebugLogger.info(LOG_RECEIVER_TAG, `Resolved WebRTC signaling URL (source): ${sourceWebRTCSignal}`);
       startWebRTCMirror(sourceWebRTCSignal, 'LOAD:source');
       return loadRequestData;
     }
