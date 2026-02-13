@@ -148,24 +148,40 @@ function addBreaks(mediaInformation) {
 }
 
 import { WebSocketPlayer } from './websocket_player.js';
+import { WebRTCPlayer } from './webrtc_player.js';
 
 const webSocketPlayer = new WebSocketPlayer('websocket-canvas');
+const webRTCPlayer = new WebRTCPlayer('webrtc-video');
 const CONNECTSDK_NAMESPACE = 'urn:x-cast:com.connectsdk';
 const MIRROR_NAMESPACE = 'urn:x-cast:com.connectsdk.mirror';
 const DUMMY_MEDIA_URL = new URL('../res/background-1.jpg', window.location.href).toString();
 let websocketMirrorActive = false;
+let webRTCMirrorActive = false;
 
 function showMirrorCanvas() {
   const canvas = document.getElementById('websocket-canvas');
+  const video = document.getElementById('webrtc-video');
   const castPlayer = document.querySelector('cast-media-player');
   if (canvas) canvas.style.display = 'block';
+  if (video) video.style.display = 'none';
+  if (castPlayer) castPlayer.style.display = 'none';
+}
+
+function showWebRTCVideo() {
+  const canvas = document.getElementById('websocket-canvas');
+  const video = document.getElementById('webrtc-video');
+  const castPlayer = document.querySelector('cast-media-player');
+  if (canvas) canvas.style.display = 'none';
+  if (video) video.style.display = 'block';
   if (castPlayer) castPlayer.style.display = 'none';
 }
 
 function showDefaultPlayer() {
   const canvas = document.getElementById('websocket-canvas');
+  const video = document.getElementById('webrtc-video');
   const castPlayer = document.querySelector('cast-media-player');
   if (canvas) canvas.style.display = 'none';
+  if (video) video.style.display = 'none';
   if (castPlayer) castPlayer.style.display = 'block';
 }
 
@@ -222,6 +238,52 @@ function normalizeWebSocketUrl(source) {
   }
 }
 
+function normalizeWebRTCSignalingUrl(source) {
+  if (!source || typeof source !== 'string') return null;
+  const trimmed = maybeDecodeURIComponentOnce(source.trim());
+  if (!trimmed) return null;
+
+  if (trimmed.startsWith('ws://') || trimmed.startsWith('wss://')) {
+    try {
+      const parsed = new URL(trimmed);
+      if (!parsed.pathname || parsed.pathname === '/' || parsed.pathname.toLowerCase() === '/webrtc') {
+        parsed.pathname = '/webrtc_signal';
+      }
+      parsed.search = '';
+      parsed.hash = '';
+      return parsed.toString();
+    } catch {
+      return null;
+    }
+  }
+
+  if (!(trimmed.startsWith('http://') || trimmed.startsWith('https://'))) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    const forced = parsed.searchParams.get('webrtcSignalUrl') ||
+      parsed.searchParams.get('webrtc') ||
+      parsed.searchParams.get('webrtcUrl') ||
+      parsed.searchParams.get('signalUrl') ||
+      parsed.searchParams.get('signal') ||
+      parsed.searchParams.get('ws') ||
+      parsed.searchParams.get('wsUrl');
+    if (forced) {
+      return normalizeWebRTCSignalingUrl(forced);
+    }
+
+    parsed.protocol = parsed.protocol === 'https:' ? 'wss:' : 'ws:';
+    parsed.pathname = '/webrtc_signal';
+    parsed.search = '';
+    parsed.hash = '';
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
 function resolveMirrorWebSocketUrl(loadRequestData) {
   const customData = extractCustomData(loadRequestData);
   const candidates = [
@@ -242,10 +304,32 @@ function resolveMirrorWebSocketUrl(loadRequestData) {
   return null;
 }
 
+function resolveWebRTCSignalingUrl(loadRequestData) {
+  const customData = extractCustomData(loadRequestData);
+  const candidates = [
+    customData?.webrtcSignalUrl,
+    customData?.signalUrl,
+    customData?.webrtcUrl,
+    customData?.wsUrl,
+    loadRequestData?.media?.contentUrl,
+    loadRequestData?.media?.entity,
+    loadRequestData?.media?.contentId
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeWebRTCSignalingUrl(candidate);
+    if (normalized) return normalized;
+  }
+
+  return null;
+}
+
 function startWebSocketMirror(wsUrl, sourceTag) {
   if (!wsUrl) return false;
   castDebugLogger.info(LOG_RECEIVER_TAG,
     `Starting WebSocket mirror from ${sourceTag}: ${wsUrl}`);
+
+  stopWebRTCMirror();
   showMirrorCanvas();
   webSocketPlayer.start(wsUrl);
   websocketMirrorActive = true;
@@ -261,8 +345,37 @@ function startWebSocketMirror(wsUrl, sourceTag) {
 function stopWebSocketMirror() {
   if (!websocketMirrorActive) return;
   webSocketPlayer.stop();
-  showDefaultPlayer();
   websocketMirrorActive = false;
+  if (!webRTCMirrorActive) {
+    showDefaultPlayer();
+  }
+}
+
+function startWebRTCMirror(signalUrl, sourceTag) {
+  if (!signalUrl) return false;
+  castDebugLogger.info(LOG_RECEIVER_TAG,
+    `Starting WebRTC mirror from ${sourceTag}: ${signalUrl}`);
+
+  stopWebSocketMirror();
+  showWebRTCVideo();
+  webRTCPlayer.start(signalUrl);
+  webRTCMirrorActive = true;
+  return true;
+}
+
+function stopWebRTCMirror() {
+  if (!webRTCMirrorActive) return;
+  webRTCPlayer.stop();
+  webRTCMirrorActive = false;
+  if (!websocketMirrorActive) {
+    showDefaultPlayer();
+  }
+}
+
+function stopAllCustomMirrors() {
+  stopWebSocketMirror();
+  stopWebRTCMirror();
+  showDefaultPlayer();
 }
 
 function asObjectMessage(payload) {
@@ -285,7 +398,18 @@ function handleMirrorControlMessage(payload, sourceTag) {
   const command = (message.type || message.action || message.command || '').toLowerCase();
   if (command === 'mirror.stop' || command === 'stop_mirror' || command === 'stopmirror' || command === 'stop') {
     castDebugLogger.info(LOG_RECEIVER_TAG, `Received mirror stop from ${sourceTag}`);
-    stopWebSocketMirror();
+    stopAllCustomMirrors();
+    return;
+  }
+
+  const mode = String(message.mode || '').toLowerCase();
+  if (mode === 'webrtc_mirror' || mode === 'webrtc') {
+    const signalUrl = normalizeWebRTCSignalingUrl(
+      message.webrtcSignalUrl || message.signalUrl || message.webrtcUrl || message.url || message.target
+    );
+    if (signalUrl) {
+      startWebRTCMirror(signalUrl, sourceTag);
+    }
     return;
   }
 
@@ -321,6 +445,37 @@ playerManager.setMessageInterceptor(
       return error;
     }
 
+    const customData = extractCustomData(loadRequestData);
+    const requestedMode = String(customData?.mode || '').toLowerCase();
+
+    if (requestedMode === 'webrtc_mirror') {
+      const signalingUrl = resolveWebRTCSignalingUrl(loadRequestData);
+      if (!signalingUrl) {
+        const error = new cast.framework.messages.ErrorData(
+          cast.framework.messages.ErrorType.LOAD_FAILED);
+        error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
+        return error;
+      }
+      startWebRTCMirror(signalingUrl, 'LOAD:customData');
+      loadRequestData.media.contentUrl = DUMMY_MEDIA_URL;
+      loadRequestData.media.contentType = 'image/jpeg';
+      return loadRequestData;
+    }
+
+    if (requestedMode === 'websocket_mirror') {
+      const mirrorWsUrl = resolveMirrorWebSocketUrl(loadRequestData);
+      if (!mirrorWsUrl) {
+        const error = new cast.framework.messages.ErrorData(
+          cast.framework.messages.ErrorType.LOAD_FAILED);
+        error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
+        return error;
+      }
+      startWebSocketMirror(mirrorWsUrl, 'LOAD:customData');
+      loadRequestData.media.contentUrl = DUMMY_MEDIA_URL;
+      loadRequestData.media.contentType = 'image/jpeg';
+      return loadRequestData;
+    }
+
     const mirrorWsUrl = resolveMirrorWebSocketUrl(loadRequestData);
     if (mirrorWsUrl) {
       startWebSocketMirror(mirrorWsUrl, 'LOAD');
@@ -330,20 +485,38 @@ playerManager.setMessageInterceptor(
     }
 
     // Normal flow
-    stopWebSocketMirror();
+    stopAllCustomMirrors();
 
     // Check all content source fields for the asset URL or ID.
     let source = loadRequestData.media.contentUrl
-      || loadRequestData.media.entity
-      || loadRequestData.media.contentId;
-    source = maybeDecodeURIComponentOnce(source);
+      || loadRequestData.media.entity || loadRequestData.media.contentId;
 
-    if (!source || source === '') {
-      let error = new cast.framework.messages.ErrorData(
+    if (typeof source !== 'string') {
+      const error = new cast.framework.messages.ErrorData(
         cast.framework.messages.ErrorType.LOAD_FAILED);
       error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
       return error;
     }
+
+    // Check for WebRTC signaling URL first when source points to signaling endpoint.
+    const sourceWebRTCSignal = normalizeWebRTCSignalingUrl(source);
+    if (sourceWebRTCSignal && source.toLowerCase().includes('webrtc')) {
+      castDebugLogger.info(LOG_RECEIVER_TAG, "Starting WebRTC Player with URL: " + sourceWebRTCSignal);
+      startWebRTCMirror(sourceWebRTCSignal, 'LOAD:source');
+      return loadRequestData;
+    }
+
+    // Check for WebSocket URL (Standard)
+    if (source.startsWith('ws://') || source.startsWith('wss://')) {
+      castDebugLogger.info(LOG_RECEIVER_TAG, "Starting WebSocket Player with URL: " + source);
+      startWebSocketMirror(source, 'LOAD:source');
+      return loadRequestData;
+    }
+
+    // Normal Flow: Stop Custom Players
+    stopAllCustomMirrors();
+
+    source = maybeDecodeURIComponentOnce(source);
 
     const sourceMatch = source.match(ID_REGEX);
     if (!(source.startsWith('http://') || source.startsWith('https://') || sourceMatch)) {
