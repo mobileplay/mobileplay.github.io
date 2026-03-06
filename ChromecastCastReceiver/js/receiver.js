@@ -619,9 +619,27 @@ const castReceiverOptions = new cast.framework.CastReceiverOptions();
  */
 const playbackConfig = new cast.framework.PlaybackConfig();
 playbackConfig.autoResumeDuration = 5;
+
+// Override default Shaka Player configuration to fix infinite buffering on HLS live streams
+playbackConfig.shakaConfig = {
+  streaming: {
+    bufferingGoal: 2, // Decrease buffer needed to start playing
+    rebufferingGoal: 2,
+    bufferBehind: 10
+  },
+  manifest: {
+    defaultPresentationDelay: 0, // Start playing immediately at the live edge
+    hls: {
+      liveSegmentsDelay: 1 // Start playing earlier than default 3 segments
+    }
+  }
+};
+
 castReceiverOptions.playbackConfig = playbackConfig;
 castDebugLogger.info(LOG_RECEIVER_TAG,
   `autoResumeDuration set to: ${playbackConfig.autoResumeDuration}`);
+castDebugLogger.info(LOG_RECEIVER_TAG,
+  `shakaConfig applied with bufferingGoal: 2, defaultPresentationDelay: 0`);
 
 /* 
  * Set the SupportedMediaCommands.
