@@ -532,16 +532,23 @@ playerManager.setMessageInterceptor(
 
     source = maybeDecodeURIComponentOnce(source);
     if (isLikelyHLSLoad(loadRequestData, source)) {
-      loadRequestData.media.streamType = cast.framework.messages.StreamType.LIVE;
+      // [FIX] Only force LIVE when sender has not explicitly set a stream type.
+      // If sender sets BUFFERED (VOD), respect it so duration bar and seek work.
+      const senderStreamType = loadRequestData.media.streamType;
+      const isExplicitlyBuffered = (senderStreamType === cast.framework.messages.StreamType.BUFFERED);
+      if (!isExplicitlyBuffered) {
+        loadRequestData.media.streamType = cast.framework.messages.StreamType.LIVE;
+      }
       const currentType = String(loadRequestData.media.contentType || '').toLowerCase();
       if (!currentType || currentType.includes('x-mpegurl')) {
         loadRequestData.media.contentType = 'application/vnd.apple.mpegurl';
       }
       castDebugLogger.info(
         LOG_RECEIVER_TAG,
-        `HLS load normalized contentType=${loadRequestData.media.contentType} streamType=LIVE source=${source}`
+        `HLS load normalized contentType=${loadRequestData.media.contentType} streamType=${isExplicitlyBuffered ? 'BUFFERED(sender)' : 'LIVE(forced)'} source=${source}`
       );
     }
+
 
     const sourceMatch = source.match(ID_REGEX);
     if (!(source.startsWith('http://') || source.startsWith('https://') || sourceMatch)) {
