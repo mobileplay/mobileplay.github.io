@@ -547,6 +547,16 @@ playerManager.setMessageInterceptor(
 
     source = maybeDecodeURIComponentOnce(source);
     if (isLikelyHLSLoad(loadRequestData, source)) {
+      const hintedSegmentFormat =
+        loadRequestData.media.hlsSegmentFormat || customData?.hlsSegmentFormat || null;
+      const hintedVideoSegmentFormat =
+        loadRequestData.media.hlsVideoSegmentFormat || customData?.hlsVideoSegmentFormat || null;
+      if (!loadRequestData.media.hlsSegmentFormat && hintedSegmentFormat) {
+        loadRequestData.media.hlsSegmentFormat = hintedSegmentFormat;
+      }
+      if (!loadRequestData.media.hlsVideoSegmentFormat && hintedVideoSegmentFormat) {
+        loadRequestData.media.hlsVideoSegmentFormat = hintedVideoSegmentFormat;
+      }
       const senderStreamType = loadRequestData.media.streamType;
       const isExplicitlyBuffered =
         senderStreamType === cast.framework.messages.StreamType.BUFFERED;
@@ -572,6 +582,8 @@ playerManager.setMessageInterceptor(
         LOG_RECEIVER_TAG,
         `HLS load: contentType=${loadRequestData.media.contentType} ` +
         `streamType=${loadRequestData.media.streamType} ` +
+        `hlsSegmentFormat=${loadRequestData.media.hlsSegmentFormat || 'unset'} ` +
+        `hlsVideoSegmentFormat=${loadRequestData.media.hlsVideoSegmentFormat || 'unset'} ` +
         `senderHint=${senderStreamType} source=${source}`
       );
     }
