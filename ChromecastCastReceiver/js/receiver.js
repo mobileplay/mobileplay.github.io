@@ -95,12 +95,27 @@ castDebugLogger.loggerLevelByTags[LOG_RECEIVER_TAG] =
 playerManager.addEventListener(
   cast.framework.events.EventType.ERROR, (event) => {
     castDebugLogger.error(LOG_RECEIVER_TAG,
-      'Detailed Error Code - ' + event.detailedErrorCode);
+      `Error: code=${event.detailedErrorCode} ` +
+      `reason=${event.reason || 'none'} ` +
+      `type=${event.type || 'none'}`);
     if (event && event.detailedErrorCode == 905) {
       castDebugLogger.error(LOG_RECEIVER_TAG,
         'LOAD_FAILED: Verify the load request is set up ' +
         'properly and the media is able to play.');
     }
+    if (event && event.error) {
+      const shakaErr = event.error;
+      castDebugLogger.error(LOG_RECEIVER_TAG,
+        `Shaka error detail: category=${shakaErr.category} ` +
+        `code=${shakaErr.code} severity=${shakaErr.severity} ` +
+        `message=${shakaErr.message || ''}`);
+    }
+  });
+
+playerManager.addEventListener(
+  cast.framework.events.EventType.BUFFERING, (event) => {
+    castDebugLogger.info(LOG_RECEIVER_TAG,
+      `Buffering: isBuffering=${event.isBuffering}`);
   });
 
 /*
@@ -532,20 +547,32 @@ playerManager.setMessageInterceptor(
 
     source = maybeDecodeURIComponentOnce(source);
     if (isLikelyHLSLoad(loadRequestData, source)) {
-      // [FIX] Only force LIVE when sender has not explicitly set a stream type.
-      // If sender sets BUFFERED (VOD), respect it so duration bar and seek work.
       const senderStreamType = loadRequestData.media.streamType;
-      const isExplicitlyBuffered = (senderStreamType === cast.framework.messages.StreamType.BUFFERED);
-      if (!isExplicitlyBuffered) {
-        loadRequestData.media.streamType = cast.framework.messages.StreamType.LIVE;
+      const isExplicitlyBuffered =
+        senderStreamType === cast.framework.messages.StreamType.BUFFERED;
+      const isExplicitlyLive =
+        senderStreamType === cast.framework.messages.StreamType.LIVE;
+      if (isExplicitlyLive) {
+        loadRequestData.media.streamType =
+          cast.framework.messages.StreamType.LIVE;
+      } else if (isExplicitlyBuffered) {
+        loadRequestData.media.streamType =
+          cast.framework.messages.StreamType.BUFFERED;
+      } else {
+        loadRequestData.media.streamType =
+          cast.framework.messages.StreamType.BUFFERED;
       }
-      const currentType = String(loadRequestData.media.contentType || '').toLowerCase();
+      const currentType =
+        String(loadRequestData.media.contentType || '').toLowerCase();
       if (!currentType || currentType.includes('x-mpegurl')) {
-        loadRequestData.media.contentType = 'application/vnd.apple.mpegurl';
+        loadRequestData.media.contentType =
+          'application/vnd.apple.mpegurl';
       }
       castDebugLogger.info(
         LOG_RECEIVER_TAG,
-        `HLS load normalized contentType=${loadRequestData.media.contentType} streamType=${isExplicitlyBuffered ? 'BUFFERED(sender)' : 'LIVE(forced)'} source=${source}`
+        `HLS load: contentType=${loadRequestData.media.contentType} ` +
+        `streamType=${loadRequestData.media.streamType} ` +
+        `senderHint=${senderStreamType} source=${source}`
       );
     }
 
@@ -627,26 +654,63 @@ const castReceiverOptions = new cast.framework.CastReceiverOptions();
 const playbackConfig = new cast.framework.PlaybackConfig();
 playbackConfig.autoResumeDuration = 5;
 
-// Override default Shaka Player configuration to fix infinite buffering on HLS live streams
 playbackConfig.shakaConfig = {
   streaming: {
-    bufferingGoal: 2, // Decrease buffer needed to start playing
+    bufferingGoal: 10,
     rebufferingGoal: 2,
-    bufferBehind: 10
+    bufferBehind: 30,
+    retryParameters: {
+      maxAttempts: 4,
+      baseDelay: 800,
+      backoffFactor: 2,
+      fuzzFactor: 0.5,
+      timeout: 30000
+    },
+    failureCallback: (error) => {
+      castDebugLogger.error(LOG_RECEIVER_TAG,
+        `Shaka streaming failure: code=${error.code} ` +
+        `category=${error.category} severity=${error.severity}`);
+    }
   },
   manifest: {
-    defaultPresentationDelay: 0, // Start playing immediately at the live edge
+    defaultPresentationDelay: 0,
+    retryParameters: {
+      maxAttempts: 4,
+      baseDelay: 800,
+      backoffFactor: 2,
+      fuzzFactor: 0.5,
+      timeout: 20000
+    },
     hls: {
-      liveSegmentsDelay: 1 // Start playing earlier than default 3 segments
+      liveSegmentsDelay: 1,
+      ignoreManifestProgramDateTime: true,
+      ignoreTextStreamFailures: true
+    }
+  },
+  drm: {
+    retryParameters: {
+      maxAttempts: 3,
+      baseDelay: 1000,
+      backoffFactor: 2,
+      fuzzFactor: 0.5,
+      timeout: 10000
     }
   }
 };
 
+playbackConfig.manifestRequestHandler = (requestInfo) => {
+  requestInfo.withCredentials = false;
+};
+playbackConfig.segmentRequestHandler = (requestInfo) => {
+  requestInfo.withCredentials = false;
+};
+playbackConfig.licenseRequestHandler = (requestInfo) => {
+  requestInfo.withCredentials = false;
+};
+
 castReceiverOptions.playbackConfig = playbackConfig;
 castDebugLogger.info(LOG_RECEIVER_TAG,
-  `autoResumeDuration set to: ${playbackConfig.autoResumeDuration}`);
-castDebugLogger.info(LOG_RECEIVER_TAG,
-  `shakaConfig applied with bufferingGoal: 2, defaultPresentationDelay: 0`);
+  `PlaybackConfig applied: bufferingGoal=10, retries=4, withCredentials=false`);
 
 /* 
  * Set the SupportedMediaCommands.
