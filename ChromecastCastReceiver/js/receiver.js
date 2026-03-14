@@ -176,6 +176,22 @@ const MIRROR_NAMESPACE = 'urn:x-cast:com.connectsdk.mirror';
 const DUMMY_MEDIA_URL = new URL('../res/background-1.jpg', window.location.href).toString();
 let websocketMirrorActive = false;
 let webRTCMirrorActive = false;
+let activeMediaNetworkConfig = {
+  headers: {},
+  withCredentials: false,
+  originContentUrl: '',
+  proxyOrigin: ''
+};
+
+const RECEIVER_FORWARD_HEADER_ALLOWLIST = new Set([
+  'accept',
+  'accept-language',
+  'authorization',
+  'cookie',
+  'origin',
+  'referer',
+  'user-agent'
+]);
 
 function showMirrorCanvas() {
   const canvas = document.getElementById('websocket-canvas');
@@ -206,6 +222,15 @@ function showDefaultPlayer() {
 
 function extractCustomData(loadRequestData) {
   return loadRequestData?.media?.customData || loadRequestData?.customData || null;
+}
+
+function resetActiveMediaNetworkConfig() {
+  activeMediaNetworkConfig = {
+    headers: {},
+    withCredentials: false,
+    originContentUrl: '',
+    proxyOrigin: ''
+  };
 }
 
 function maybeDecodeURIComponentOnce(value) {
@@ -343,11 +368,277 @@ function resolveWebRTCSignalingUrl(loadRequestData) {
   return null;
 }
 
+function normalizeForwardHeaders(rawHeaders) {
+  if (!rawHeaders || typeof rawHeaders !== 'object') return {};
+
+  const normalized = {};
+  Object.entries(rawHeaders).forEach(([rawKey, rawValue]) => {
+    if (typeof rawKey !== 'string') return;
+    if (typeof rawValue !== 'string') return;
+
+    const key = rawKey.trim();
+    const value = rawValue.trim();
+    if (!key || !value) return;
+
+    if (!RECEIVER_FORWARD_HEADER_ALLOWLIST.has(key.toLowerCase())) return;
+    normalized[key] = value;
+  });
+
+  return normalized;
+}
+
+function extractOrigin(urlString) {
+  if (!urlString || typeof urlString !== 'string') return '';
+  try {
+    return new URL(urlString).origin;
+  } catch {
+    return '';
+  }
+}
+
+function getHeaderValue(headers, name) {
+  if (!headers || typeof headers !== 'object') return '';
+  const target = String(name || '').toLowerCase();
+  const entry = Object.entries(headers).find(([key]) => String(key).toLowerCase() === target);
+  return entry ? String(entry[1] || '') : '';
+}
+
+function resolveActiveMediaNetworkConfig(loadRequestData, customData) {
+  const candidateHeaders =
+    customData?.requestHeaders || customData?.networkHeaders || customData?.headers || {};
+  const headers = normalizeForwardHeaders(candidateHeaders);
+  const contentUrl = String(loadRequestData?.media?.contentUrl || '');
+  const originContentUrl = String(
+    customData?.originContentUrl || customData?.contentSourceUrl || customData?.upstreamUrl || ''
+  ).trim();
+  const proxyOrigin = String(
+    customData?.proxyOrigin || extractOrigin(contentUrl)
+  ).trim();
+  const withCredentials = Boolean(customData?.withCredentials);
+
+  activeMediaNetworkConfig = {
+    headers,
+    withCredentials,
+    originContentUrl,
+    proxyOrigin
+  };
+
+  castDebugLogger.info(
+    LOG_RECEIVER_TAG,
+    `Active network config: proxyOrigin=${proxyOrigin || 'unset'} ` +
+    `originContentUrl=${originContentUrl || 'unset'} ` +
+    `withCredentials=${withCredentials} ` +
+    `headers=${Object.keys(headers).join(',') || 'none'}`
+  );
+}
+
+function isSameOrigin(urlString, origin) {
+  if (!urlString || !origin) return false;
+  try {
+    return new URL(urlString).origin === origin;
+  } catch {
+    return false;
+  }
+}
+
+function requestUsesProxyMapping(urlString) {
+  if (!urlString) return false;
+  try {
+    const parsed = new URL(urlString);
+    return parsed.pathname.includes('/segment/') || parsed.searchParams.has('id');
+  } catch {
+    return false;
+  }
+}
+
+function applyReceiverRequestHeaders(requestInfo, requestType) {
+  if (!requestInfo) return;
+
+  const targetUrl = String(requestInfo.url || '');
+  const hasProxyOrigin = Boolean(activeMediaNetworkConfig.proxyOrigin);
+  const isProxyRequest =
+    hasProxyOrigin &&
+    isSameOrigin(targetUrl, activeMediaNetworkConfig.proxyOrigin) &&
+    requestUsesProxyMapping(targetUrl);
+
+  requestInfo.headers = requestInfo.headers || {};
+
+  if (!isProxyRequest) {
+    Object.entries(activeMediaNetworkConfig.headers).forEach(([key, value]) => {
+      requestInfo.headers[key] = value;
+    });
+    if (activeMediaNetworkConfig.withCredentials) {
+      requestInfo.withCredentials = true;
+    }
+  } else {
+    requestInfo.withCredentials = false;
+  }
+
+  if (!requestInfo.timeoutInterval || requestInfo.timeoutInterval < 30000) {
+    requestInfo.timeoutInterval = 30000;
+  }
+
+  if (targetUrl && hasProxyOrigin && !isSameOrigin(targetUrl, activeMediaNetworkConfig.proxyOrigin)) {
+    castDebugLogger.info(
+      LOG_RECEIVER_TAG,
+      `${requestType} request bypassed proxy, injecting upstream headers: ${targetUrl}`
+    );
+  } else {
+    castDebugLogger.debug(
+      LOG_RECEIVER_TAG,
+      `${requestType} request: ${targetUrl || 'unset'} proxy=${isProxyRequest} ` +
+      `headers=${Object.keys(requestInfo.headers || {}).join(',') || 'none'}`
+    );
+  }
+}
+
+function resolveURLPreservingTemplate(rawValue, baseURL) {
+  if (!rawValue || typeof rawValue !== 'string') return rawValue;
+
+  const trimmed = rawValue.trim();
+  if (!trimmed) return trimmed;
+
+  const lowered = trimmed.toLowerCase();
+  if (
+    lowered.startsWith('data:') ||
+    lowered.startsWith('blob:') ||
+    lowered.startsWith('urn:')
+  ) {
+    return trimmed;
+  }
+
+  try {
+    return new URL(trimmed, baseURL).toString();
+  } catch {
+    return trimmed;
+  }
+}
+
+function localNameOf(node) {
+  return String(node?.localName || node?.nodeName || '').split(':').pop();
+}
+
+function rewriteDashManifest(manifestText, manifestURL) {
+  if (!manifestText || !manifestURL || typeof DOMParser === 'undefined') {
+    return manifestText;
+  }
+
+  let document;
+  try {
+    document = new DOMParser().parseFromString(manifestText, 'application/xml');
+  } catch (error) {
+    castDebugLogger.warn(LOG_RECEIVER_TAG, `Failed to parse DASH manifest: ${error?.message || error}`);
+    return manifestText;
+  }
+
+  if (!document || document.getElementsByTagName('parsererror').length > 0) {
+    castDebugLogger.warn(LOG_RECEIVER_TAG, 'DASH manifest parser returned parsererror; skipping rewrite.');
+    return manifestText;
+  }
+
+  let rewriteCount = 0;
+  const urlAttributeNames = ['media', 'initialization', 'sourceURL', 'index', 'href'];
+
+  const rewriteAttribute = (element, attributeName, baseURL) => {
+    if (!element.hasAttribute(attributeName)) return;
+
+    const rawValue = element.getAttribute(attributeName);
+    const rewrittenValue = resolveURLPreservingTemplate(rawValue, baseURL);
+    if (rewrittenValue && rewrittenValue !== rawValue) {
+      element.setAttribute(attributeName, rewrittenValue);
+      rewriteCount += 1;
+    }
+  };
+
+  const traverse = (element, inheritedBaseURL) => {
+    if (!element || element.nodeType !== Node.ELEMENT_NODE) return;
+
+    let currentBaseURL = inheritedBaseURL;
+    const childElements = Array.from(element.children || []);
+
+    childElements.forEach((child) => {
+      if (localNameOf(child) !== 'BaseURL') return;
+
+      const rawValue = String(child.textContent || '').trim();
+      if (!rawValue) return;
+
+      const rewrittenValue = resolveURLPreservingTemplate(rawValue, currentBaseURL);
+      if (rewrittenValue !== rawValue) {
+        child.textContent = rewrittenValue;
+        rewriteCount += 1;
+      }
+
+      currentBaseURL = rewrittenValue || currentBaseURL;
+    });
+
+    urlAttributeNames.forEach((attributeName) => {
+      rewriteAttribute(element, attributeName, currentBaseURL);
+    });
+
+    if (element.hasAttributeNS?.('http://www.w3.org/1999/xlink', 'href')) {
+      const rawValue = element.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
+      const rewrittenValue = resolveURLPreservingTemplate(rawValue, currentBaseURL);
+      if (rewrittenValue && rewrittenValue !== rawValue) {
+        element.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', rewrittenValue);
+        rewriteCount += 1;
+      }
+    }
+
+    childElements.forEach((child) => {
+      if (localNameOf(child) === 'Location') {
+        const rawValue = String(child.textContent || '').trim();
+        const rewrittenValue = resolveURLPreservingTemplate(rawValue, currentBaseURL);
+        if (rewrittenValue && rewrittenValue !== rawValue) {
+          child.textContent = rewrittenValue;
+          rewriteCount += 1;
+        }
+      }
+
+      traverse(child, currentBaseURL);
+    });
+  };
+
+  traverse(document.documentElement, manifestURL);
+
+  if (rewriteCount > 0) {
+    castDebugLogger.info(
+      LOG_RECEIVER_TAG,
+      `Rewrote DASH manifest URLs: count=${rewriteCount} base=${manifestURL}`
+    );
+  }
+
+  try {
+    return new XMLSerializer().serializeToString(document);
+  } catch (error) {
+    castDebugLogger.warn(LOG_RECEIVER_TAG, `Failed to serialize DASH manifest: ${error?.message || error}`);
+    return manifestText;
+  }
+}
+
+function isLikelyDashManifest(manifestText, responseHeaders, shakaRequest) {
+  const contentType = getHeaderValue(responseHeaders, 'content-type').toLowerCase();
+  if (contentType.includes('dash+xml')) return true;
+
+  const shakaURL = String(
+    shakaRequest?.uris?.[0] || shakaRequest?.originalUri || shakaRequest?.url || ''
+  ).toLowerCase();
+  if (shakaURL.includes('.mpd')) return true;
+
+  return typeof manifestText === 'string' && manifestText.includes('<MPD');
+}
+
 function isLikelyHLSLoad(loadRequestData, source) {
   const contentType = String(loadRequestData?.media?.contentType || '').toLowerCase();
   const normalizedSource = String(source || '').toLowerCase();
   if (contentType.includes('mpegurl')) return true;
   return normalizedSource.includes('.m3u8');
+}
+
+function isLikelyDashLoad(loadRequestData, source) {
+  const contentType = String(loadRequestData?.media?.contentType || '').toLowerCase();
+  const normalizedSource = String(source || '').toLowerCase();
+  if (contentType.includes('dash+xml')) return true;
+  return normalizedSource.includes('.mpd');
 }
 
 function startWebSocketMirror(wsUrl, sourceTag) {
@@ -463,6 +754,8 @@ playerManager.setMessageInterceptor(
     castDebugLogger.debug(LOG_RECEIVER_TAG,
       `loadRequestData: ${JSON.stringify(loadRequestData)}`);
 
+    resetActiveMediaNetworkConfig();
+
     // If the loadRequestData is incomplete, return an error message.
     if (!loadRequestData || !loadRequestData.media) {
       const error = new cast.framework.messages.ErrorData(
@@ -472,6 +765,7 @@ playerManager.setMessageInterceptor(
     }
 
     const customData = extractCustomData(loadRequestData);
+    resolveActiveMediaNetworkConfig(loadRequestData, customData);
     const requestedMode = String(customData?.mode || '').toLowerCase();
     castDebugLogger.info(LOG_RECEIVER_TAG, `Mirror LOAD mode=${requestedMode || 'auto'} customData=${JSON.stringify(customData || {})}`);
 
@@ -585,6 +879,23 @@ playerManager.setMessageInterceptor(
         `hlsSegmentFormat=${loadRequestData.media.hlsSegmentFormat || 'unset'} ` +
         `hlsVideoSegmentFormat=${loadRequestData.media.hlsVideoSegmentFormat || 'unset'} ` +
         `senderHint=${senderStreamType} source=${source}`
+      );
+    }
+
+    if (isLikelyDashLoad(loadRequestData, source)) {
+      const currentType =
+        String(loadRequestData.media.contentType || '').toLowerCase();
+      if (!currentType || currentType === 'video/mp4') {
+        loadRequestData.media.contentType = 'application/dash+xml';
+      }
+      if (!loadRequestData.media.streamType) {
+        loadRequestData.media.streamType =
+          cast.framework.messages.StreamType.BUFFERED;
+      }
+      castDebugLogger.info(
+        LOG_RECEIVER_TAG,
+        `DASH load: contentType=${loadRequestData.media.contentType} ` +
+        `streamType=${loadRequestData.media.streamType} source=${source}`
       );
     }
 
@@ -711,18 +1022,34 @@ playbackConfig.shakaConfig = {
 };
 
 playbackConfig.manifestRequestHandler = (requestInfo) => {
-  requestInfo.withCredentials = false;
+  applyReceiverRequestHeaders(requestInfo, 'manifest');
 };
 playbackConfig.segmentRequestHandler = (requestInfo) => {
-  requestInfo.withCredentials = false;
+  applyReceiverRequestHeaders(requestInfo, 'segment');
 };
 playbackConfig.licenseRequestHandler = (requestInfo) => {
-  requestInfo.withCredentials = false;
+  applyReceiverRequestHeaders(requestInfo, 'license');
+};
+playbackConfig.manifestHandler = (manifest, responseInfo, shakaRequest) => {
+  if (!isLikelyDashManifest(manifest, responseInfo?.headers, shakaRequest)) {
+    return manifest;
+  }
+
+  const manifestURL =
+    String(shakaRequest?.uris?.[0] || shakaRequest?.originalUri || shakaRequest?.url || '').trim()
+    || activeMediaNetworkConfig.originContentUrl;
+
+  if (!manifestURL) {
+    castDebugLogger.warn(LOG_RECEIVER_TAG, 'Skipping DASH manifest rewrite because manifest URL is unavailable.');
+    return manifest;
+  }
+
+  return rewriteDashManifest(manifest, manifestURL);
 };
 
 castReceiverOptions.playbackConfig = playbackConfig;
 castDebugLogger.info(LOG_RECEIVER_TAG,
-  `PlaybackConfig applied: bufferingGoal=10, retries=4, withCredentials=false`);
+  `PlaybackConfig applied: bufferingGoal=10, retries=4, request customization enabled`);
 
 /* 
  * Set the SupportedMediaCommands.
