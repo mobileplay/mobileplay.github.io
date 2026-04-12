@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy — Authenticator 2FA</title>
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --surface: #121a22;
+            --surface-2: #1a2430;
+            --border: #2a3544;
+            --text: #e8eef4;
+            --muted: #8b9aad;
+            --accent: #34d399;
+            --accent-dim: rgba(52, 211, 153, 0.15);
+            --radius: 14px;
+            --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: var(--font);
+            line-height: 1.65;
+            color: var(--text);
+            background: radial-gradient(1200px 600px at 10% -10%, rgba(52, 211, 153, 0.08), transparent 50%),
+                radial-gradient(900px 500px at 100% 0%, rgba(56, 189, 248, 0.06), transparent 45%),
+                var(--bg);
+            min-height: 100vh;
+            padding: 24px 18px 48px;
+        }
+        .wrap { max-width: 760px; margin: 0 auto; }
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+        .logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, var(--accent), #059669);
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 15px;
+            color: #042f1f;
+            letter-spacing: -0.02em;
+        }
+        .brand span { font-weight: 700; font-size: 1.05rem; }
+        nav { display: flex; flex-wrap: wrap; gap: 10px; }
+        nav a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        nav a:hover { color: var(--text); border-color: var(--accent); background: var(--surface-2); }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 26px 32px;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+        }
+        h1 {
+            margin: 0 0 8px;
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+        }
+        .tagline {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-bottom: 22px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        h2 {
+            color: var(--accent);
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin: 26px 0 10px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+        p, li { color: #c5d0dc; }
+        ul { padding-left: 1.2rem; }
+        li { margin: 6px 0; }
+        .callout {
+            margin: 20px 0;
+            padding: 16px 18px;
+            border-radius: 12px;
+            background: var(--accent-dim);
+            border: 1px solid rgba(52, 211, 153, 0.35);
+        }
+        .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 18px; }
+        footer {
+            margin-top: 28px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        a.inline { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <a class="brand" href="contact.html" aria-label="Authenticator 2FA home">
+                <span class="logo">2FA</span>
+                <span>Authenticator 2FA</span>
+            </a>
+            <nav>
+                <a href="privacy.html">Privacy</a>
+                <a href="term.html">Terms</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+        </header>
+
+        <article class="card">
+            <h1>Privacy Policy</h1>
+            <p class="tagline">How Authenticator 2FA handles information on your device and when you contact us.</p>
+            <p class="meta">Last updated: <span id="current-date"></span></p>
+
+            <p>Mobile Secure ("we," "our," or "us") built Authenticator 2FA (the "App") as a security-focused, offline-first tool. This policy explains what data exists in the product, what we may receive if you email us, and how Apple’s platform may process information independently of us.</p>
+
+            <div class="callout">
+                <strong>Summary.</strong> The App is designed so your TOTP secrets and related vault data stay on your device under your control (for example, in the iOS Keychain). The App does not send your secrets to servers we operate for sync or analytics.
+            </div>
+
+            <h2>1. Data stored on your device</h2>
+            <p>Depending on how you use the App, data on your device may include:</p>
+            <ul>
+                <li><strong>TOTP secrets and account metadata</strong> (issuer, account label, algorithm, period, digits, vault grouping, pins, and similar fields)</li>
+                <li><strong>Security settings</strong> such as PIN preferences, auto-lock timing, and policy toggles you enable</li>
+                <li><strong>Local logs or audit entries</strong> the App keeps for security visibility (stored on-device)</li>
+                <li><strong>Encrypted backup or export files</strong> you explicitly create; these files are under your control once saved or shared</li>
+            </ul>
+            <p>You choose whether to use features like QR scanning, encrypted import/export, or device-to-device transfer. Those flows operate with the data you provide; you should only scan or import secrets you trust.</p>
+
+            <h2>2. Data we collect from the App</h2>
+            <p>We do not operate a user account system inside the App for authentication to our servers. The App is not designed to upload your vault contents or generated codes to us.</p>
+            <p>If a future version introduces optional network features, this policy will be updated to describe them clearly before they apply to you.</p>
+
+            <h2>3. Apple and your device</h2>
+            <p>Apple provides the operating system, App Store, and platform services. Apple may process data according to its own policies, for example:</p>
+            <ul>
+                <li>Purchase and subscription records tied to your Apple ID</li>
+                <li>Device backups, iCloud, or iCloud Keychain if you enable them</li>
+                <li>Crash diagnostics or analytics if you opt in at the OS level</li>
+            </ul>
+            <p>We do not control Apple’s systems. Review Apple’s privacy materials and your device settings for those choices.</p>
+
+            <h2>4. When you contact us</h2>
+            <p>If you email <a class="inline" href="mailto:mobilesecure.feedback@gmail.com">mobilesecure.feedback@gmail.com</a>, we receive the information you include (for example, your address, message text, and attachments). We use that information only to respond and improve the product, and we do not sell your email address.</p>
+
+            <h2>5. Legal requests</h2>
+            <p>Because we do not host your secrets, we generally cannot access or produce your on-device TOTP data. We may disclose limited information if required by law, such as basic correspondence metadata related to a support request.</p>
+
+            <h2>6. Retention</h2>
+            <p>Email support threads are retained only as long as needed to operate support and meet legal obligations. Data on your device remains until you delete it or remove the App, subject to how your device handles app data and backups.</p>
+
+            <h2>7. Security</h2>
+            <p>No method of storage is perfect. You should keep your device updated, use a strong device passcode, and enable biometrics where appropriate. Follow service providers’ guidance on recovery codes and backup strategies.</p>
+
+            <h2>8. Children</h2>
+            <p>The App is not directed to children under 13. If you believe a child has contacted us with personal information, email us and we will take appropriate steps.</p>
+
+            <h2>9. International users</h2>
+            <p>If you contact us from outside your home region, your message may be processed where we or our email provider operate. We aim to handle personal data consistent with this policy and applicable law.</p>
+
+            <h2>10. Changes</h2>
+            <p>We may update this Privacy Policy. The "Last updated" date will change when we do. Material changes will be described here; for App Store listings, we will align descriptions with the product behavior.</p>
+
+            <h2>11. Contact</h2>
+            <p>Privacy questions: <a class="inline" href="mailto:mobilesecure.feedback@gmail.com">mobilesecure.feedback@gmail.com</a></p>
+        </article>
+
+        <footer>
+            <p>© <span id="y"></span> Mobile Secure · <a href="term.html">Terms</a> · <a href="contact.html">Contact</a></p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        document.getElementById('y').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

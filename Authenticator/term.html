@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Use — Authenticator 2FA</title>
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --surface: #121a22;
+            --surface-2: #1a2430;
+            --border: #2a3544;
+            --text: #e8eef4;
+            --muted: #8b9aad;
+            --accent: #34d399;
+            --accent-dim: rgba(52, 211, 153, 0.15);
+            --radius: 14px;
+            --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: var(--font);
+            line-height: 1.65;
+            color: var(--text);
+            background: radial-gradient(1200px 600px at 10% -10%, rgba(52, 211, 153, 0.08), transparent 50%),
+                radial-gradient(900px 500px at 100% 0%, rgba(56, 189, 248, 0.06), transparent 45%),
+                var(--bg);
+            min-height: 100vh;
+            padding: 24px 18px 48px;
+        }
+        .wrap { max-width: 760px; margin: 0 auto; }
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+        .logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, var(--accent), #059669);
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 15px;
+            color: #042f1f;
+            letter-spacing: -0.02em;
+        }
+        .brand span { font-weight: 700; font-size: 1.05rem; }
+        nav { display: flex; flex-wrap: wrap; gap: 10px; }
+        nav a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        nav a:hover { color: var(--text); border-color: var(--accent); background: var(--surface-2); }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 26px 32px;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+        }
+        h1 {
+            margin: 0 0 8px;
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+        }
+        .tagline {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-bottom: 22px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        h2 {
+            color: var(--accent);
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin: 26px 0 10px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+        p, li { color: #c5d0dc; }
+        ul { padding-left: 1.2rem; }
+        li { margin: 6px 0; }
+        .callout {
+            margin: 20px 0;
+            padding: 16px 18px;
+            border-radius: 12px;
+            background: var(--accent-dim);
+            border: 1px solid rgba(52, 211, 153, 0.35);
+        }
+        .callout strong { color: var(--text); }
+        .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 18px; }
+        footer {
+            margin-top: 28px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <a class="brand" href="contact.html" aria-label="Authenticator 2FA home">
+                <span class="logo">2FA</span>
+                <span>Authenticator 2FA</span>
+            </a>
+            <nav>
+                <a href="privacy.html">Privacy</a>
+                <a href="term.html">Terms</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+        </header>
+
+        <article class="card">
+            <h1>Terms of Use</h1>
+            <p class="tagline">Rules for using the Authenticator 2FA iOS application and related materials.</p>
+            <p class="meta">Last updated: <span id="current-date"></span></p>
+
+            <p>These Terms of Use ("Terms") govern your use of Authenticator 2FA (the "App"), a local two-factor authentication (2FA) tool for generating time-based one-time passwords (TOTP) and managing related security features on your device. The App is provided by Mobile Secure ("we," "our," or "us"). By installing or using the App, you agree to these Terms.</p>
+
+            <h2>1. The service</h2>
+            <p>The App helps you store secrets locally, generate TOTP codes, organize entries (for example, in vaults), and use on-device security features such as PIN, biometrics, auto-lock, and optional encrypted export or transfer flows as implemented in the product. The App is intended for personal or internal business use on devices you control.</p>
+
+            <h2>2. Your responsibilities</h2>
+            <p>You are responsible for:</p>
+            <ul>
+                <li>Safeguarding your device, PIN, biometrics, and any backup or recovery materials you create</li>
+                <li>Verifying that codes you use match the service you intend to sign in to (phishing and look-alike sites remain a risk)</li>
+                <li>Compliance with laws and the terms of third-party services where you enable 2FA</li>
+                <li>Any loss of access resulting from forgotten passwords, lost devices, or corrupted backups outside our control</li>
+            </ul>
+
+            <div class="callout">
+                <strong>Important.</strong> The App is designed to operate without sending your secrets to our servers. We do not operate a cloud back end for your TOTP secrets as part of these Terms. Data may still be included in device backups or OS features (for example, iCloud) according to your device settings and Apple’s policies.
+            </div>
+
+            <h2>3. License</h2>
+            <p>We grant you a limited, non-exclusive, non-transferable, revocable license to use the App in line with the Apple Media Services Terms and these Terms. You may not sublicense, sell, or redistribute the App except as allowed by applicable law.</p>
+
+            <h2>4. Restrictions</h2>
+            <p>You agree not to:</p>
+            <ul>
+                <li>Reverse engineer, decompile, or attempt to extract the source code except where mandatory law allows</li>
+                <li>Circumvent or weaken security, licensing, or integrity protections in the App</li>
+                <li>Use the App for unlawful activity or to harass third parties</li>
+                <li>Use automated means to abuse support channels or App Store systems</li>
+            </ul>
+
+            <h2>5. Optional purchases</h2>
+            <p>If the App offers in-app purchases or subscriptions, they are billed by Apple. Pricing, renewal, and cancellation are managed in your Apple ID settings. Feature availability may change between versions; see the App Store description for the current offering.</p>
+
+            <h2>6. Updates and changes</h2>
+            <p>We may ship updates that add, modify, or remove functionality. We may also update these Terms. Material changes will be reflected by updating the "Last updated" date on this page. Continued use after changes constitutes acceptance unless applicable law requires otherwise.</p>
+
+            <h2>7. Disclaimers</h2>
+            <p>The App is provided "as is" and "as available." To the fullest extent permitted by law, we disclaim warranties of merchantability, fitness for a particular purpose, and non-infringement. We do not warrant uninterrupted operation, error-free codes, or compatibility with every third-party service or authentication method.</p>
+
+            <h2>8. Limitation of liability</h2>
+            <p>To the maximum extent permitted by law, we are not liable for indirect, incidental, special, consequential, or punitive damages, or loss of profits, data, goodwill, or security incidents arising from your use of the App or reliance on generated codes. Some jurisdictions do not allow certain limitations; in those cases, our liability is limited to the greatest extent permitted.</p>
+
+            <h2>9. Termination</h2>
+            <p>You may stop using the App at any time by uninstalling it. We may stop supporting older versions. Provisions that by nature should survive (disclaimers, liability limits, governing law) survive termination.</p>
+
+            <h2>10. Governing law</h2>
+            <p>These Terms are governed by the laws applicable in your place of residence or the jurisdiction required by mandatory consumer law, without regard to conflict-of-law rules that would send the dispute to another jurisdiction’s laws.</p>
+
+            <h2>11. Contact</h2>
+            <p>Questions about these Terms: <a href="mailto:mobilesecure.feedback@gmail.com" style="color:var(--accent);">mobilesecure.feedback@gmail.com</a></p>
+        </article>
+
+        <footer>
+            <p>© <span id="y"></span> Mobile Secure · <a href="privacy.html">Privacy</a> · <a href="contact.html">Contact</a></p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        document.getElementById('y').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
