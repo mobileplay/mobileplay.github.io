@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Support - Smart AI Cleaner</title>
+    <style>
+        :root {
+            --bg: #f4f7ff;
+            --card: #ffffff;
+            --text: #17203a;
+            --muted: #5a6785;
+            --accent: #4f46e5;
+            --accent-hover: #4338ca;
+            --border: #d9e2ff;
+            --shadow: 0 18px 45px rgba(34, 47, 108, 0.12);
+            --ok-bg: #e9f9ef;
+            --ok-border: #2ca55c;
+            --err: #d83b3b;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #eaf0ff 0, #f4f7ff 40%, #f8f9ff 100%);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 28px 14px;
+        }
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            background: var(--card);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .hero {
+            padding: 30px 28px 24px;
+            color: #fff;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+        }
+        .hero h1 {
+            margin: 0 0 8px;
+            font-size: clamp(26px, 4vw, 36px);
+            line-height: 1.2;
+        }
+        .hero p { margin: 0; opacity: 0.92; }
+        .content { padding: 24px 28px 30px; }
+        .form-group { margin-bottom: 16px; }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2a4d;
+        }
+        input[type="text"], input[type="email"], textarea, select {
+            width: 100%;
+            border: 1px solid #cfd9ff;
+            border-radius: 12px;
+            padding: 12px 13px;
+            font-family: inherit;
+            font-size: 15px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fff;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+        .required { color: #d52f2f; }
+        button {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            padding: 13px 14px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            background: var(--accent);
+            cursor: pointer;
+            transition: background 0.2s, transform 0.06s;
+        }
+        button:hover { background: var(--accent-hover); }
+        button:active { transform: translateY(1px); }
+        button:disabled { opacity: 0.65; cursor: not-allowed; }
+        .error-message {
+            margin-top: 12px;
+            color: var(--err);
+            display: none;
+            font-size: 14px;
+        }
+        .thank-you {
+            display: none;
+            margin-top: 18px;
+            border-left: 4px solid var(--ok-border);
+            background: var(--ok-bg);
+            border-radius: 10px;
+            padding: 14px 14px 14px 12px;
+        }
+        .support-box {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 12px;
+            background: #f7f9ff;
+            border: 1px solid var(--border);
+            font-size: 14px;
+            color: var(--muted);
+        }
+        .support-box a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .support-box a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Contact Support</h1>
+            <p>Smart AI Cleaner</p>
+        </div>
+        <div class="content">
+            <p>Need help, found a bug, or have a feature request? Send us details and we will review it as soon as possible.</p>
+
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label for="name">Your name <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Topic <span class="required">*</span></label>
+                    <select id="subject" name="subject" required>
+                        <option value="" disabled selected>Select a topic</option>
+                        <option value="Bug Report">Bug Report</option>
+                        <option value="Feature Request">Feature Request</option>
+                        <option value="Billing Question">Billing Question</option>
+                        <option value="Account or Access Issue">Account or Access Issue</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message <span class="required">*</span></label>
+                    <textarea id="message" name="message" required placeholder="Describe your issue or idea in detail..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="device">Device info (optional)</label>
+                    <input type="text" id="device" name="device" placeholder="Example: iPhone 14 Pro, iOS 17.5">
+                </div>
+
+                <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" name="_template" value="table">
+                <input type="text" name="_honey" style="display:none">
+                <input type="hidden" id="appNameField" name="app_name" value="Smart AI Cleaner">
+                <input type="hidden" id="platformField" name="platform" value="">
+                <input type="hidden" id="sourceField" name="source" value="support_page_contact_form">
+
+                <button type="submit" id="submitBtn">Send to Support</button>
+                <div class="error-message" id="errorMessage">Unable to submit now. Please try again later or send a direct email below.</div>
+            </form>
+
+            <div class="thank-you" id="thankYou">
+                <strong>Thank you!</strong>
+                <div>Your support request was sent successfully for Smart AI Cleaner.</div>
+            </div>
+
+            <div class="support-box">
+                <div><strong>Direct support email:</strong></div>
+                <div>
+                    <a id="directMailLink" href="mailto:mobilesecure.feedback@gmail.com?subject=%5BSmart%20AI%20Cleaner%5D%20Support%20Request">mobilesecure.feedback@gmail.com</a>
+                </div>
+                <div>Please keep the default subject format so we can identify that the message comes from Smart AI Cleaner.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const APP_NAME = "Smart AI Cleaner";
+        const SUPPORT_EMAIL = "mobilesecure.feedback@gmail.com";
+        const form = document.getElementById("feedbackForm");
+        const submitBtn = document.getElementById("submitBtn");
+        const errorMessage = document.getElementById("errorMessage");
+        const thankYou = document.getElementById("thankYou");
+        const directMailLink = document.getElementById("directMailLink");
+
+        document.getElementById("platformField").value = navigator.userAgent;
+
+        directMailLink.href =
+            `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`[${APP_NAME}] Support Request`)}`;
+
+        form.addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Sending...";
+            errorMessage.style.display = "none";
+
+            const subjectValue = document.getElementById("subject").value;
+            const composedSubject = `[${APP_NAME}] ${subjectValue}`;
+
+            const payload = new FormData(form);
+            payload.set("_subject", composedSubject);
+
+            try {
+                const response = await fetch(`https://formsubmit.co/ajax/${SUPPORT_EMAIL}`, {
+                    method: "POST",
+                    body: payload,
+                    headers: { "Accept": "application/json" }
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error("Submission failed");
+                }
+
+                form.style.display = "none";
+                thankYou.style.display = "block";
+            } catch (error) {
+                errorMessage.style.display = "block";
+                submitBtn.textContent = "Send to Support";
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

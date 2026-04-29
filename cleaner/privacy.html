@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Smart AI Cleaner</title>
+    <style>
+        :root {
+            --bg: #f3f6ff;
+            --card: #ffffff;
+            --text: #172033;
+            --muted: #4f5d79;
+            --accent: #4f46e5;
+            --accent-soft: #eef0ff;
+            --border: #dce4ff;
+            --shadow: 0 20px 50px rgba(44, 55, 118, 0.12);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            line-height: 1.65;
+            color: var(--text);
+            background: radial-gradient(circle at top right, #e8ebff 0, #f3f6ff 40%, #f7f9ff 100%);
+            padding: 28px 16px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .hero {
+            padding: 34px 32px 24px;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: #fff;
+        }
+        .hero h1 {
+            margin: 0 0 8px;
+            font-size: clamp(28px, 4vw, 38px);
+            line-height: 1.2;
+        }
+        .hero p { margin: 0; opacity: 0.92; }
+        .content { padding: 28px 32px 32px; }
+        .meta {
+            display: inline-block;
+            margin-bottom: 18px;
+            padding: 7px 12px;
+            background: var(--accent-soft);
+            color: #3530b4;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        h2 {
+            margin: 22px 0 8px;
+            color: #2b369b;
+            font-size: 20px;
+        }
+        ul { margin-top: 8px; padding-left: 20px; }
+        li { margin-bottom: 6px; color: var(--muted); }
+        p { margin: 10px 0; color: var(--muted); }
+        .contact-box {
+            margin-top: 24px;
+            padding: 18px 18px 14px;
+            border-radius: 14px;
+            background: #f8f9ff;
+            border: 1px solid var(--border);
+        }
+        .contact-box p { margin: 0 0 8px; }
+        a { color: var(--accent); font-weight: 600; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .footer-note {
+            margin-top: 24px;
+            font-size: 14px;
+            color: #66718f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Privacy Policy</h1>
+            <p>for Smart AI Cleaner</p>
+        </div>
+        <div class="content">
+            <span class="meta">Last updated: <span id="current-date"></span></span>
+
+            <p>Smart AI Cleaner Labs Co., Ltd ("we", "our", or "us") builds Smart AI Cleaner to help users free storage safely with on-device analysis. This Privacy Policy explains what we access, what we use, and what we never collect.</p>
+
+            <h2>1. What We Access</h2>
+            <ul>
+                <li><strong>Photos Library (with your permission):</strong> We access photo and video assets so the app can detect duplicates, blurry images, large files, and cleanup candidates.</li>
+                <li><strong>Purchase Status:</strong> We use StoreKit/App Store purchase status to unlock premium features.</li>
+                <li><strong>Notification Permission:</strong> Only if you enable reminder notifications.</li>
+            </ul>
+
+            <h2>2. What We Do Not Collect</h2>
+            <ul>
+                <li>We do not upload your photos or videos to our servers.</li>
+                <li>We do not sell personal data to third parties.</li>
+                <li>We do not use your media to train external AI systems.</li>
+            </ul>
+
+            <h2>3. How Data Is Used</h2>
+            <p>Data access is used strictly to provide core app functionality, improve stability, and support subscription entitlement handling. Media processing is designed to run on device whenever possible.</p>
+
+            <h2>4. Security</h2>
+            <p>We use reasonable technical and organizational safeguards. No system can guarantee absolute security, but we continuously work to protect user data and app integrity.</p>
+
+            <h2>5. Children</h2>
+            <p>Smart AI Cleaner is not directed to children under 13, and we do not knowingly collect personal data from children.</p>
+
+            <h2>6. Policy Updates</h2>
+            <p>We may update this Privacy Policy from time to time. The latest effective date is shown at the top of this page.</p>
+
+            <h2>7. Contact</h2>
+            <div class="contact-box">
+                <p>For privacy questions, contact support:</p>
+                <p>
+                    <a href="mailto:mobilesecure.feedback@gmail.com?subject=Smart%20AI%20Cleaner%20-%20Privacy%20Question">
+                        mobilesecure.feedback@gmail.com
+                    </a>
+                </p>
+                <p>When emailing us, please keep the app name in the email subject so we can identify the source app quickly.</p>
+            </div>
+
+            <p class="footer-note">Thank you for using Smart AI Cleaner.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("current-date").textContent = new Date().toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+    </script>
+</body>
+</html>
