@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Use - AI Cleaner</title>
+    <style>
+        :root {
+            --bg: #f5f7ff;
+            --card: #ffffff;
+            --text: #162039;
+            --muted: #3f4c67;
+            --accent: #4338ca;
+            --accent-soft: #ecebff;
+            --border: #dce2ff;
+            --shadow: 0 20px 48px rgba(34, 43, 94, 0.13);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            line-height: 1.66;
+            color: var(--text);
+            background: radial-gradient(circle at top left, #ecf0ff 0, #f5f7ff 45%, #f8f9ff 100%);
+            padding: 28px 16px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: var(--card);
+            box-shadow: var(--shadow);
+        }
+        .hero {
+            padding: 34px 32px 22px;
+            background: linear-gradient(135deg, #4338ca, #6366f1);
+            color: #fff;
+        }
+        .hero h1 {
+            margin: 0;
+            font-size: clamp(28px, 4vw, 38px);
+            line-height: 1.2;
+        }
+        .hero p { margin: 8px 0 0; color: #f8faff; opacity: 1; font-weight: 500; text-shadow: 0 1px 2px rgba(16, 21, 56, 0.18); }
+        .content { padding: 28px 32px 34px; }
+        .meta {
+            display: inline-block;
+            margin-bottom: 18px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: #3028aa;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        h2 {
+            margin: 24px 0 8px;
+            color: #2e3596;
+            font-size: 20px;
+        }
+        p { margin: 10px 0; color: var(--muted); }
+        ul { margin-top: 8px; padding-left: 20px; }
+        li { margin-bottom: 6px; color: var(--muted); }
+        .contact-box {
+            margin-top: 24px;
+            padding: 16px 18px;
+            background: #f8f9ff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+        }
+        a { color: var(--accent); font-weight: 600; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .footer-note {
+            margin-top: 24px;
+            font-size: 14px;
+            color: #4f5b78;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Terms of Use</h1>
+            <p>AI Cleaner</p>
+        </div>
+        <div class="content">
+            <span class="meta">Last updated: <span id="current-date"></span></span>
+
+            <p>These Terms of Use ("Terms") govern your use of AI Cleaner provided by AI Cleaner Labs Co., Ltd. By using the app, you agree to these Terms.</p>
+
+            <h2>1. License</h2>
+            <p>AI Cleaner is licensed, not sold. You receive a limited, non-exclusive, non-transferable right to use the app for personal use on devices you own or control.</p>
+
+            <h2>2. Subscriptions</h2>
+            <p>Premium features may be offered through auto-renewing subscriptions managed by Apple. Billing, renewal, and cancellation are handled through your Apple ID subscription settings.</p>
+
+            <h2>3. User Responsibility</h2>
+            <ul>
+                <li>You are responsible for reviewing cleanup suggestions before deletion.</li>
+                <li>You should maintain your own backups when needed.</li>
+                <li>You must use the app in compliance with applicable laws.</li>
+            </ul>
+
+            <h2>4. Restrictions</h2>
+            <ul>
+                <li>Do not reverse engineer, decompile, or attempt to extract source code.</li>
+                <li>Do not interfere with app integrity, security, or normal operation.</li>
+                <li>Do not use the app for illegal, abusive, or harmful activities.</li>
+            </ul>
+
+            <h2>5. Service Changes</h2>
+            <p>We may update, improve, limit, or discontinue features at any time to maintain performance, security, and product quality.</p>
+
+            <h2>6. Disclaimer</h2>
+            <p>The app is provided "AS IS" without warranties of any kind. Analysis results are suggestions and may not always be complete or error-free.</p>
+
+            <h2>7. Limitation of Liability</h2>
+            <p>To the maximum extent permitted by law, AI Cleaner Labs Co., Ltd is not liable for indirect, incidental, or consequential damages arising from the use of the app.</p>
+
+            <h2>8. Termination</h2>
+            <p>We may restrict or terminate access if these Terms are violated.</p>
+
+            <h2>9. Changes to Terms</h2>
+            <p>These Terms may be updated periodically. Continued use of the app after updates means you accept the revised Terms.</p>
+
+            <h2>10. Contact</h2>
+            <div class="contact-box">
+                <p>For legal or account questions, contact support:</p>
+                <p>
+                    <a href="mailto:mobilesecure.feedback@gmail.com?subject=Smart%20AI%20Cleaner%20-%20Terms%20Question">
+                        mobilesecure.feedback@gmail.com
+                    </a>
+                </p>
+                <p>Please keep "AI Cleaner" in the email subject so we can identify the app source quickly.</p>
+            </div>
+
+            <p class="footer-note">Using AI Cleaner means you acknowledge and accept these Terms.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("current-date").textContent = new Date().toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+    </script>
+</body>
+</html>
