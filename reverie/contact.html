@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - Reverie Journal</title>
+    <style>
+        :root {
+            --bg-color: #FDFBF7;
+            --card-bg: #FFFFFF;
+            --text-main: #2C2C2E;
+            --text-secondary: #6E6E73;
+            --accent: #B58A6D;
+            --accent-hover: #A0785C;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.06);
+            --radius-card: 24px;
+            --radius-input: 16px;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--radius-card);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .form-group {
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+        input[type="text"],
+        input[type="email"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-input);
+            font-family: inherit;
+            font-size: 15px;
+            background-color: var(--bg-color);
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(181, 138, 109, 0.15);
+        }
+        textarea {
+            height: 140px;
+            resize: vertical;
+        }
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: var(--radius-input);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: var(--shadow-sm);
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .contact-info {
+            background-color: var(--bg-color);
+            padding: 20px;
+            border-radius: var(--radius-input);
+            margin: 30px 0 0 0;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        .contact-info p {
+            margin: 5px 0;
+            text-align: center;
+        }
+        .thank-you {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background-color: #FDFBF7;
+            border: 1px solid #D1E5D5;
+            border-radius: var(--radius-input);
+            margin-top: 20px;
+        }
+        .thank-you h3 {
+            color: #34C759;
+            margin-top: 0;
+        }
+        .required {
+            color: #FF3B30;
+        }
+        .error-message {
+            color: #FF3B30;
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Feedback & Support</h1>
+        <p>We value your feedback. Please help us improve Reverie by sharing suggestions, reporting issues, or asking questions.</p>
+
+        <form id="feedbackForm">
+            <div class="form-group">
+                <label for="name">Your Name <span class="required">*</span></label>
+                <input type="text" id="name" name="name" placeholder="John Doe" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address <span class="required">*</span></label>
+                <input type="email" id="email" name="email" placeholder="you@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="subject">Topic <span class="required">*</span></label>
+                <select id="subject" name="subject" required>
+                    <option value="" disabled selected>Select a topic</option>
+                    <option value="Reverie Plus / Premium">Reverie Plus / Premium</option>
+                    <option value="iCloud Sync Issue">iCloud Sync Issue</option>
+                    <option value="App Lock / Security">App Lock / Security</option>
+                    <option value="Bug Report">Bug Report</option>
+                    <option value="Feature Request">Feature Request</option>
+                    <option value="General Feedback">General Feedback</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Your Message <span class="required">*</span></label>
+                <textarea id="message" name="message" required placeholder="Please describe your issue or feedback in detail..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="device">Device Information (Optional)</label>
+                <input type="text" id="device" name="device" placeholder="e.g., iPhone 15 Pro, iOS 18.0">
+            </div>
+
+            <input type="hidden" name="_captcha" value="false">
+            <input type="text" name="_honey" style="display:none">
+            <input type="hidden" name="_subject" value="[Reverie Journal] New Support Request">
+            <input type="hidden" name="source_app" value="Reverie Journal">
+
+            <button type="submit" id="submitBtn">Send Message</button>
+            <div class="error-message" id="errorMessage">An error occurred while sending your message. Please try again.</div>
+        </form>
+
+        <div class="thank-you" id="thankYou">
+            <h3>Message Sent!</h3>
+            <p>Thank you for reaching out. We have received your message and will get back to you as soon as possible.</p>
+        </div>
+
+        <div class="contact-info">
+            <p><strong>Prefer to email us directly?</strong></p>
+            <p>Contact us at: <a href="mailto:mobilesecure.feedback@gmail.com">mobilesecure.feedback@gmail.com</a></p>
+            <p><strong>Reverie Team</strong></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMessage = document.getElementById('errorMessage');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            errorMessage.style.display = 'none';
+
+            try {
+                const response = await fetch('https://formsubmit.co/ajax/mobilesecure.feedback@gmail.com', {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('feedbackForm').style.display = 'none';
+                    document.getElementById('thankYou').style.display = 'block';
+                } else {
+                    throw new Error('Submission failed');
+                }
+            } catch (error) {
+                errorMessage.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Message';
+            }
+        });
+    </script>
+</body>
+</html>
