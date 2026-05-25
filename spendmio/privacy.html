@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Spendmio: Budget Tracker</title>
+    <style>
+        :root {
+            --bg-color: #0D0A1A;
+            --card-bg: #1A1338;
+            --text-main: #F1F5F9;
+            --text-secondary: #A89FD4;
+            --accent: #7C3AED;
+            --accent-cyan: #06B6D4;
+            --border-color: #2E2060;
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
+            --radius-card: 24px;
+            --radius-input: 16px;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background: linear-gradient(160deg, #0D0A1A 0%, #150E2B 50%, #1E1640 100%);
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--radius-card);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--text-main);
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(90deg, #7C3AED, #06B6D4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 36px;
+            color: var(--text-main);
+        }
+        p, li {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        ul {
+            padding-left: 20px;
+            margin-bottom: 24px;
+        }
+        a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .contact-info {
+            background-color: #150E2B;
+            padding: 24px;
+            border-radius: var(--radius-input);
+            margin: 32px 0;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent);
+        }
+        .contact-info p {
+            margin: 5px 0;
+            color: var(--text-main);
+        }
+        .last-updated {
+            text-align: center;
+            font-style: italic;
+            font-size: 14px;
+            color: #6B5F9E;
+            margin-top: 50px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+        .highlight {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .philosophy {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-input);
+            padding: 20px 24px;
+            margin: 24px 0;
+        }
+        .philosophy p {
+            margin: 0;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Privacy Policy</h1>
+
+        <p>Last Updated: <span id="current-date"></span></p>
+
+        <p>BurnPilot Labs Pte. Ltd. ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we handle your information when you use the <strong>Spendmio: Budget Tracker</strong> application (the "App").</p>
+
+        <div class="philosophy">
+            <p><strong>Our core philosophy: Your financial data stays on your device. Spendmio does not operate a backend account system and does not upload your financial data to our servers.</strong></p>
+        </div>
+
+        <h2>1. Information Stored Locally</h2>
+        <p>Spendmio stores your data locally on your device. Depending on how you use the App, this may include:</p>
+        <ul>
+            <li><strong>Financial records:</strong> expenses, income, budgets, subscriptions, transaction history, and category data.</li>
+            <li><strong>Receipt scan results:</strong> amounts, merchants, and dates extracted from receipts you scan or select.</li>
+            <li><strong>App settings and preferences:</strong> currency, reminders, notification settings, Face ID / Touch ID lock, and learning data used to improve on-device suggestions.</li>
+            <li><strong>AI and insights data:</strong> spending patterns, health score, stress estimates, and behavioral insights generated on your device.</li>
+            <li><strong>Purchase status:</strong> subscription or Pro unlock state provided by Apple StoreKit. We do not receive or store your full payment card details.</li>
+        </ul>
+
+        <h2>2. On-Device Processing</h2>
+        <p>The following features run locally on your device and do not send your financial data to our servers:</p>
+        <ul>
+            <li>Receipt OCR (camera and photo library)</li>
+            <li>Category suggestions and smart tags</li>
+            <li>Financial health score and spending insights</li>
+            <li>Stress estimates and anomaly checks</li>
+            <li>On-device AI chat (when supported by your device)</li>
+        </ul>
+
+        <h2>3. iCloud Backup</h2>
+        <p>If you enable iCloud Backup, Spendmio stores a private backup snapshot in your personal iCloud account using Apple's CloudKit. This data remains in your iCloud account and is not accessible to us.</p>
+
+        <h2>4. Device Permissions</h2>
+        <ul>
+            <li><strong>Camera and Photos:</strong> used only when you scan a receipt or choose a receipt image for expense entry.</li>
+            <li><strong>Notifications:</strong> used for budget alerts, subscription reminders, and digest notifications when you enable them.</li>
+            <li><strong>Face ID / Touch ID:</strong> used only to lock the App when you enable App Lock.</li>
+        </ul>
+
+        <h2>5. Data Sharing and Disclosure</h2>
+        <p>We do not sell your personal information. We do not upload your financial data to our servers. We may share limited information only in these circumstances:</p>
+        <ul>
+            <li>With Apple services for in-app purchases, subscriptions, and entitlement validation.</li>
+            <li>With Apple iCloud / CloudKit when you choose to enable iCloud Backup.</li>
+            <li>When required by law, legal process, or to protect our rights and users.</li>
+        </ul>
+
+        <h2>6. Data Storage and Security</h2>
+        <p>Your financial data remains on your device until you edit, export, or delete it. We use reasonable technical measures to protect the App, but no electronic storage method is completely secure. You can further protect your data by enabling Face ID / Touch ID lock within the App.</p>
+
+        <h2>7. Financial Disclaimer</h2>
+        <p>Spendmio is a personal finance tracking tool. It is not financial advice and is not a substitute for professional financial consultation. We are not responsible for financial decisions made based on App data.</p>
+
+        <h2>8. Children's Privacy</h2>
+        <p>The App is not directed to children under 13. We do not knowingly collect personal information from children under 13.</p>
+
+        <h2>9. Your Choices</h2>
+        <p>You can change app settings, notification permissions, and device permissions at any time through the App or your device settings. You can export or delete your data from the App where supported.</p>
+
+        <h2>10. Changes to This Privacy Policy</h2>
+        <p>We may update this Privacy Policy from time to time. Updates will be posted on this page with the latest update date.</p>
+
+        <h2>11. Contact Us</h2>
+        <div class="contact-info">
+            <p>If you have questions about this Privacy Policy, please contact us:</p>
+            <p><strong>Company Name:</strong> BurnPilot Labs Pte. Ltd.</p>
+            <p><strong>Email:</strong> <a href="mailto:mobilesecure.feedback@gmail.com">mobilesecure.feedback@gmail.com</a></p>
+        </div>
+
+        <div class="last-updated">
+            <p>Thank you for using Spendmio: Budget Tracker.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    </script>
+</body>
+</html>
