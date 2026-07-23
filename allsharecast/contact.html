@@ -30,6 +30,9 @@
         .form-group {
             margin-bottom: 20px;
         }
+        .form-group.compact {
+            margin-bottom: 14px;
+        }
         label {
             display: block;
             margin-bottom: 5px;
@@ -46,10 +49,14 @@
             border-radius: 4px;
             font-family: inherit;
             font-size: 16px;
+            box-sizing: border-box;
         }
         textarea {
             height: 150px;
             resize: vertical;
+        }
+        textarea.short {
+            height: 80px;
         }
         button {
             background-color: #3498db;
@@ -89,6 +96,72 @@
             margin-top: 10px;
             display: none;
         }
+        .device-section {
+            border: 1px solid #e5eaf0;
+            border-radius: 6px;
+            padding: 16px;
+            background-color: #fafbfd;
+            margin-bottom: 20px;
+        }
+        .device-section-title {
+            margin: 0 0 6px;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        .device-section-hint {
+            margin: 0 0 14px;
+            font-size: 13px;
+            color: #5f6b7a;
+        }
+        .field-hint {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #5f6b7a;
+        }
+        .model-guide {
+            margin-top: 8px;
+            border: 1px solid #dde5ee;
+            border-radius: 4px;
+            background: #fff;
+            padding: 10px 12px;
+            font-size: 13px;
+            color: #3d4a5c;
+        }
+        .model-guide summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: #2c3e50;
+            list-style: none;
+        }
+        .model-guide summary::-webkit-details-marker {
+            display: none;
+        }
+        .model-guide summary::before {
+            content: "▸ ";
+            color: #3498db;
+        }
+        .model-guide[open] summary::before {
+            content: "▾ ";
+        }
+        .model-guide ul {
+            margin: 10px 0 0;
+            padding-left: 18px;
+        }
+        .model-guide li {
+            margin-bottom: 6px;
+        }
+        .device-required-note {
+            display: none;
+            margin: 0 0 12px;
+            font-size: 13px;
+            color: #c0392b;
+        }
+        .validation-error {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 8px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -96,7 +169,7 @@
         <h1>Feedback Form</h1>
         <p>We value your feedback! Please help us improve Smart TV Cast by sharing your thoughts, suggestions, or reporting any issues.</p>
         
-        <form id="feedbackForm">
+        <form id="feedbackForm" novalidate>
             <div class="form-group">
                 <label for="name">Your Name <span class="required">*</span></label>
                 <input type="text" id="name" name="name" required>
@@ -123,12 +196,64 @@
                 <label for="message">Your Feedback <span class="required">*</span></label>
                 <textarea id="message" name="message" required placeholder="Please describe your feedback in detail..."></textarea>
             </div>
-            
-            <div class="form-group">
-                <label for="device">Device Information (optional)</label>
-                <input type="text" id="device" name="device" placeholder="e.g., Samsung Smart TV 2022, iPhone">
+
+            <div class="device-section" id="deviceSection">
+                <h2 class="device-section-title">Device Information <span class="required device-required-mark" hidden>*</span></h2>
+                <p class="device-section-hint" id="deviceOptionalHint">Optional for most topics. Required for Bug Report and Technical Issue.</p>
+                <p class="device-required-note" id="deviceRequiredNote">Device details are required for Bug Report and Technical Issue so we can reproduce the problem.</p>
+
+                <div class="form-group compact">
+                    <label for="tv_brand">TV Brand <span class="required device-required-mark" hidden>*</span></label>
+                    <select id="tv_brand" name="tv_brand">
+                        <option value="">Select brand</option>
+                        <option value="Samsung">Samsung</option>
+                        <option value="LG">LG</option>
+                        <option value="Sony">Sony</option>
+                        <option value="TCL">TCL</option>
+                        <option value="Hisense">Hisense</option>
+                        <option value="Roku">Roku</option>
+                        <option value="Fire TV">Fire TV</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group compact">
+                    <label for="tv_model">TV Model / Model Code <span class="required device-required-mark" hidden>*</span></label>
+                    <input type="text" id="tv_model" name="tv_model" placeholder="e.g. UN55TU7000, OLED55C3PUA">
+                    <details class="model-guide" id="modelGuide">
+                        <summary>How to find your TV model code</summary>
+                        <ul>
+                            <li><strong>Samsung:</strong> Settings → Support → About This TV → Model Code</li>
+                            <li><strong>LG:</strong> Settings → General → About This TV → Model Name</li>
+                            <li><strong>Sony:</strong> Settings → System → About → Model</li>
+                            <li><strong>TCL:</strong> Settings → System → About → Model</li>
+                            <li><strong>Hisense:</strong> Settings → Support / System → About → Model</li>
+                            <li><strong>Roku / Fire TV:</strong> Settings → System → About → Model / Device info</li>
+                            <li><strong>Other:</strong> Check Settings → About / Support on your TV</li>
+                        </ul>
+                    </details>
+                </div>
+
+                <div class="form-group compact">
+                    <label for="tv_os">TV Year / OS version <span class="required device-required-mark" hidden>*</span></label>
+                    <input type="text" id="tv_os" name="tv_os" placeholder="e.g. 2023 / Tizen 7, webOS 23">
+                </div>
+
+                <div class="form-group compact">
+                    <label for="phone">Phone / Tablet <span class="required device-required-mark" hidden>*</span></label>
+                    <input type="text" id="phone" name="phone" placeholder="e.g. iPhone 15, iOS 17">
+                </div>
+
+                <div class="form-group compact" style="margin-bottom: 0;">
+                    <label for="device_notes">Additional device notes (optional)</label>
+                    <textarea id="device_notes" name="device_notes" class="short" placeholder="Firmware, casting method, network type, etc."></textarea>
+                </div>
+                <div class="validation-error" id="deviceValidationError">Please fill in all required device fields.</div>
             </div>
-            
+
+            <input type="hidden" name="app_name" value="Smart TV Cast">
+            <input type="hidden" name="app_store_id" value="6745129182">
+            <input type="hidden" name="app_store_url" value="https://apps.apple.com/app/id6745129182">
             <input type="hidden" name="_captcha" value="false">
             <input type="hidden" name="_next" value="https://yourwebsite.com/thank-you.html">
             <input type="text" name="_honey" style="display:none">
@@ -150,38 +275,99 @@
     </div>
 
     <script>
-        document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        (function () {
+            const form = document.getElementById('feedbackForm');
+            const subject = document.getElementById('subject');
             const submitBtn = document.getElementById('submitBtn');
             const errorMessage = document.getElementById('errorMessage');
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Sending...';
-            errorMessage.style.display = 'none';
-            
-            try {
-                const response = await fetch('https://formsubmit.co/ajax/mobilesecure.feedback@gmail.com', {
-                    method: 'POST',
-                    body: new FormData(this),
-                    headers: {
-                        'Accept': 'application/json'
+            const deviceValidationError = document.getElementById('deviceValidationError');
+            const deviceRequiredNote = document.getElementById('deviceRequiredNote');
+            const deviceOptionalHint = document.getElementById('deviceOptionalHint');
+            const modelGuide = document.getElementById('modelGuide');
+            const requiredMarks = document.querySelectorAll('.device-required-mark');
+            const deviceFields = [
+                document.getElementById('tv_brand'),
+                document.getElementById('tv_model'),
+                document.getElementById('tv_os'),
+                document.getElementById('phone')
+            ];
+
+            function needsDeviceInfo(value) {
+                return value === 'Bug Report' || value === 'Technical Issue';
+            }
+
+            function updateDeviceRequirement() {
+                const required = needsDeviceInfo(subject.value);
+                deviceFields.forEach(function (field) {
+                    if (required) {
+                        field.setAttribute('required', 'required');
+                    } else {
+                        field.removeAttribute('required');
                     }
                 });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('feedbackForm').style.display = 'none';
-                    document.getElementById('thankYou').style.display = 'block';
-                } else {
-                    throw new Error('Submission failed');
+                requiredMarks.forEach(function (mark) {
+                    mark.hidden = !required;
+                });
+                deviceRequiredNote.style.display = required ? 'block' : 'none';
+                deviceOptionalHint.style.display = required ? 'none' : 'block';
+                if (required) {
+                    modelGuide.open = true;
                 }
-            } catch (error) {
-                errorMessage.style.display = 'block';
-                submitBtn.textContent = 'Submit Feedback';
-                submitBtn.disabled = false;
+                deviceValidationError.style.display = 'none';
             }
-        });
+
+            function deviceFieldsValid() {
+                if (!needsDeviceInfo(subject.value)) {
+                    return true;
+                }
+                return deviceFields.every(function (field) {
+                    return field.value && field.value.trim() !== '';
+                });
+            }
+
+            subject.addEventListener('change', updateDeviceRequirement);
+            updateDeviceRequirement();
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                errorMessage.style.display = 'none';
+                deviceValidationError.style.display = 'none';
+
+                if (!form.checkValidity() || !deviceFieldsValid()) {
+                    if (!deviceFieldsValid()) {
+                        deviceValidationError.style.display = 'block';
+                    }
+                    form.reportValidity();
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Sending...';
+
+                try {
+                    const response = await fetch('https://formsubmit.co/ajax/mobilesecure.feedback@gmail.com', {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        form.style.display = 'none';
+                        document.getElementById('thankYou').style.display = 'block';
+                    } else {
+                        throw new Error('Submission failed');
+                    }
+                } catch (error) {
+                    errorMessage.style.display = 'block';
+                    submitBtn.textContent = 'Submit Feedback';
+                    submitBtn.disabled = false;
+                }
+            });
+        })();
     </script>
 </body>
 </html>
